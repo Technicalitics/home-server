@@ -1,0 +1,101 @@
+services:
+  postgresql:
+    image: docker.io/library/postgres:16-alpine
+    container_name: authentik_postgres
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${PG_DB:-authentik}
+      - POSTGRES_PASSWORD=${PG_PASS}
+      - POSTGRES_USER=${PG_USER:-authentik}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    expose:
+      - "5432/tcp"
+    restart: unless-stopped
+    volumes:
+      - database:/var/lib/postgresql/data:z
+    labels:
+      glance.parent: authentik
+      glance.name: DB
+
+  server:
+    command: server
+    container_name: authentik_server
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    env_file:
+      - .env
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
+      - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
+    ports:
+      - "9000:9000/tcp"
+      - "9443:9443/tcp"
+    restart: unless-stopped
+    user: "1000"
+    volumes:
+      - /srv/docker/data/authentik/custom-templates:/templates:Z
+      - /srv/docker/data/authentik/data:/data:z
+    labels:
+      glance.name: Authentik
+      glance.icon: /assets/authentik.png
+      glance.url: https://auth.${TAILNET}.ts.net
+      glance.description: Identity provider and SSO
+      glance.id: authentik
+
+  worker:
+    command: worker
+    container_name: authentik_worker
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    env_file:
+      - .env
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
+      - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
+    restart: unless-stopped
+    shm_size: 512mb
+    user: "root"
+    volumes:
+      - /srv/docker/data/authentik/certs:/certs:Z
+      - /srv/docker/data/authentik/custom-templates:/templates:Z
+      - /srv/docker/data/authentik/data:/data:z
+      - /var/run/docker.sock:/var/run/docker.sock:Z
+    labels:
+      glance.parent: authentik
+      glance.name: Worker
+
+  tailscale:
+    container_name: authentik-ts
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_AUTH_ONCE=true
+    hostname: auth
+    image: tailscale/tailscale:latest
+    restart: unless-stopped
+    volumes:
+      - tailscale-state:/var/lib/tailscale:Z
+    labels:
+      glance.parent: authentik
+      glance.name: Tailscale
+
+networks:
+  default:
+    name: authentik_default
+
+volumes:
+  database:
+  tailscale-state:

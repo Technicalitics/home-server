@@ -1,0 +1,88 @@
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      - ${UPLOAD_LOCATION}:/data
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - '2283:2283'
+    depends_on:
+      - redis
+      - database
+    restart: always
+    labels:
+      glance.name: Immich
+      glance.icon: /assets/immich.png
+      glance.url: https://images.${TAILNET}.ts.net
+      glance.description: Image & video management
+      glance.id: immich
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+    labels:
+      glance.parent: immich
+      glance.name: Machine Learning
+
+  redis:
+    container_name: immich_redis
+    image: docker.io/valkey/valkey:9@sha256:2bce660b767cb62c8c0ea020e94a230093be63dbd6af4f21b044960517a5842d
+    env_file:
+      - .env
+    restart: always
+    labels:
+      glance.parent: immich
+      glance.name: Redis
+
+  database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    shm_size: 128mb
+    restart: always
+    labels:
+      glance.parent: immich
+      glance.name: DB
+
+  tailscale:
+    command:
+      - /usr/local/bin/containerboot
+    container_name: ts-immich
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--accept-dns
+    hostname: images
+    image: tailscale/tailscale:latest
+    restart: always
+    volumes:
+      - immich_tailscale-state:/var/lib/tailscale
+    labels:
+      glance.parent: immich
+      glance.name: Tailscale
+
+networks:
+  default:
+    name: immich_default
+    external: true
+
+volumes:
+  model-cache:
+  immich_tailscale-state:
