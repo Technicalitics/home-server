@@ -8,8 +8,8 @@ Documentation of my self-hosted home server stack using Docker Compose.
 
 | Service | Description | Port |
 |---------|-------------|------|
-| [authentik/](authentik/README.md) | Identity provider & SSO | 9000, 9443 |
-| [immich/](immich/README.md) | Photo & video management | 2283 |
+| [authentik](authentik/README.md) | Identity provider & SSO | 9000, 9443 |
+| [immich](immich/README.md) | Photo & video management | 2283 |
 
 ## Repository Structure
 
@@ -51,7 +51,7 @@ See individual service READMEs for detailed instructions.
 
 ## Backup
 
-This repository serves as a backup of my working docker compose configurations. To restore:
+This repository serves as a backup of my working docker compose configurations. To restore a docker-compose.yml file:
 1. Clone the repository
 2. Recreate your `.env` files from `.env.example`
 3. Start services with `docker compose up -d`
