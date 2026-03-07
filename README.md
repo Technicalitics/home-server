@@ -24,10 +24,12 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md
-└── jellyfin/            # Jellyfin media server
-    ├── docker-compose.yml
-    ├── .env.example
-    └── README.md
+├── jellyfin/            # Jellyfin media server
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+└── docs/                # Shared documentation
+    └── INSTRUCTIONS.md
 ```
 
 ## Prerequisites
@@ -44,7 +46,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
    - Edit `.env` with your values
    - Run `docker compose up -d`
 
-See individual service READMEs for detailed instructions.
+See [docs/INSTRUCTIONS.md](docs/INSTRUCTIONS.md) for common setup details and [individual service READMEs](*/README.md) for service-specific configuration.
 
 ## Security Notes
 
