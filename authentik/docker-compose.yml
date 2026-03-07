@@ -24,9 +24,9 @@ services:
       glance.name: DB
 
   server:
-    command: server
-    container_name: authentik_server
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    container_name: authentik_server
+    command: server
     env_file:
       - .env
     environment:
@@ -50,9 +50,9 @@ services:
       glance.id: authentik
 
   worker:
-    command: worker
-    container_name: authentik_worker
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    container_name: authentik_worker
+    command: worker
     env_file:
       - .env
     environment:
@@ -73,6 +73,7 @@ services:
       glance.name: Worker
 
   tailscale:
+    image: tailscale/tailscale:latest
     container_name: authentik-ts
     devices:
       - /dev/net/tun:/dev/net/tun
@@ -84,7 +85,6 @@ services:
       - TS_AUTHKEY=${TS_AUTHKEY}
       - TS_AUTH_ONCE=true
     hostname: auth
-    image: tailscale/tailscale:latest
     restart: unless-stopped
     volumes:
       - tailscale-state:/var/lib/tailscale:Z
