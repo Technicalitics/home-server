@@ -1,0 +1,51 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    environment:
+      - TZ=${TZ:-UTC}
+    ports:
+      - "8096:8096"
+      - "8920:8920"
+    restart: unless-stopped
+    volumes:
+      - /srv/docker/data/jellyfin/config:/config:z
+      - /srv/docker/data/jellyfin/cache:/cache:z
+      - /mnt/media/movies:/media/movies:ro,z
+      - /mnt/media/music:/media/music:ro,z
+    labels:
+      glance.name: Jellyfin
+      glance.icon: /assets/jellyfin.png
+      glance.url: https://media.${TAILNET}.ts.net
+      glance.description: Media server
+      glance.id: jellyfin
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: jellyfin-ts
+    command:
+      - /usr/local/bin/containerboot
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+    hostname: media
+    restart: unless-stopped
+    volumes:
+      - tailscale-state:/var/lib/tailscale:z
+    labels:
+      glance.parent: jellyfin
+      glance.name: Tailscale
+
+networks:
+  default:
+    name: jellyfin_default
+    external: true
+
+volumes:
+  tailscale-state:
