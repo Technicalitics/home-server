@@ -11,6 +11,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [authentik](authentik/README.md) | Identity provider & SSO | 9000, 9443 |
 | [immich](immich/README.md) | Photo & video management | 2283 |
 | [jellyfin](jellyfin/README.md) | Media server | 8096, 8920 |
+| [donetick](donetick/README.md) | Todo list with badges | 2021 |
 
 ## Repository Structure
 
@@ -22,11 +23,17 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   └── README.md
 ├── immich/              # Immich photo management
 │   ├── docker-compose.yml
-│   ├── .env.example
+│   .env.example
 │   └── README.md
 ├── jellyfin/            # Jellyfin media server
 │   ├── docker-compose.yml
 │   ├── .env.example
+│   └── README.md
+├── donetick/            # Donetick todo with badges
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   ├── config/
+│   │   └── selfhosted.yaml
 │   └── README.md
 └── docs/                # Shared documentation
     └── INSTRUCTIONS.md
