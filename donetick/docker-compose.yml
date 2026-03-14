@@ -1,0 +1,40 @@
+services:
+  donetick:
+    image: donetick/donetick
+    container_name: donetick
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "2021:2021"
+    volumes:
+      - /srv/docker/data/donetick/data:/donetick-data:z
+      - /srv/docker/data/donetick/config:/config:z
+    environment:
+      - DT_ENV=selfhosted
+      - DT_SQLITE_PATH=/donetick-data/donetick.db
+
+  tailscale:
+    command:
+      - /usr/local/bin/containerboot
+    container_name: donetick-ts
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--accept-dns
+    hostname: tasks
+    image: tailscale/tailscale:latest
+    restart: unless-stopped
+    volumes:
+      - tailscale-state:/var/lib/tailscale:z
+
+networks:
+  default:
+    name: donetick_default
+    external: true
+
+volumes:
+  tailscale-state:

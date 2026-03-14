@@ -1,0 +1,21 @@
+# Donetick Self-Hosted Configuration
+# Copy this to wherever you mounted your config folder
+
+database:
+  type: sqlite
+  path: /donetick-data/donetick.db
+
+server:
+  port: 2021
+  host: 0.0.0.0
+
+auth:
+  # Generate a secure random string for JWT secret
+  jwt_secret: "GENERATE_SECURE_PASSWORD_HERE"
+
+# CORS settings - add your domain here for production
+cors_allow_origins:
+  - "*"
+
+# Registration settings
+allow_registration: true
