@@ -12,6 +12,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [immich](immich/README.md) | Photo & video management | 2283 |
 | [jellyfin](jellyfin/README.md) | Media server | 8096, 8920 |
 | [donetick](donetick/README.md) | Todo list with badges | 2021 |
+| [invidious](invidious/README.md) | YouTube front-end | 3000 |
 
 ## Repository Structure
 
@@ -34,6 +35,10 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── .env.example
 │   ├── config/
 │   │   └── selfhosted.yaml
+│   └── README.md
+├── invidious/           # Invidious YouTube frontend
+│   ├── docker-compose.yml
+│   ├── .env.example
 │   └── README.md
 └── docs/                # Shared documentation
     └── INSTRUCTIONS.md

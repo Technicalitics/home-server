@@ -1,0 +1,114 @@
+services:
+  invidious:
+    image: quay.io/invidious/invidious:latest
+    container_name: invidious
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    environment:
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: ${POSTGRES_DB}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+          host: invidious-db
+          port: 5432
+        check_tables: true
+        invidious_companion_key: ${INVIDIOUS_COMPANION_KEY}
+        invidious_companion:
+          - private_url: "http://host.docker.internal:8282/companion"
+        port: 3000
+        external_port: 443
+        domain: youtube.${TAILNET_NAME}.ts.net
+        https_only: true
+        statistics_enabled: true
+        use_innertube_for_captions: true
+        hmac_key: ${HMAC_KEY}
+    entrypoint:
+      - "/sbin/tini"
+      - "--"
+    command:
+      - "/invidious/invidious"
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/trending || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      invidious-db:
+        condition: service_healthy
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+  invidious-db:
+    image: docker.io/library/postgres:14
+    container_name: invidious-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - /srv/docker/data/invidious/config/sql:/config/sql:Z
+      - /srv/docker/data/invidious/init-invidious-db.sh:/docker-entrypoint-initdb.d/init-invidious-db.sh:Z
+      - postgresdata:/var/lib/postgresql/data:z
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  invidious_companion:
+    image: quay.io/invidious/invidious-companion:latest
+    container_name: invidious-companion
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_KEY}
+      SERVER_BASE_PATH: /companion
+      HOST: 0.0.0.0
+      PORT: "8282"
+    network_mode: "host"
+    entrypoint:
+      - "/tini"
+      - "--"
+      - "/app/invidious_companion"
+    user: "appuser"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - companioncache:/var/tmp/youtubei.js:z
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: invidious-ts
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--accept-dns
+    hostname: youtube
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+networks:
+  default:
+    name: invidious_default
+
+volumes:
+  postgresdata:
+  companioncache:
+  tailscale_state:
