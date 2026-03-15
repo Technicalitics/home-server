@@ -45,7 +45,7 @@ services:
     labels:
       glance.name: Authentik
       glance.icon: /assets/authentik.png
-      glance.url: https://auth.${TAILNET}.ts.net
+      glance.url: https://auth.${TAILNET_NAME}.ts.net
       glance.description: Identity provider and SSO
       glance.id: authentik
 

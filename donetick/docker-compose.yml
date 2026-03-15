@@ -16,9 +16,10 @@ services:
     labels:
       glance.name: Donetick
       glance.icon: /assets/donetick.png
-      glance.url: https://tasks.${TAILNET}.ts.net
+      glance.url: https://tasks.${TAILNET_NAME}.ts.net
       glance.description: Task management
       glance.id: donetick
+      glance.category: user-facing
 
   tailscale:
     command:

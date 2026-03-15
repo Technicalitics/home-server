@@ -16,9 +16,10 @@ services:
     labels:
       glance.name: Immich
       glance.icon: /assets/immich.png
-      glance.url: https://images.${TAILNET}.ts.net
+      glance.url: https://images.${TAILNET_NAME}.ts.net
       glance.description: Image & video management
       glance.id: immich
+      glance.category: user-facing
 
   immich-machine-learning:
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}

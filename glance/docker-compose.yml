@@ -10,6 +10,12 @@ services:
       - ./assets:/app/assets:ro,Z
       - /etc/timezone:/etc/timezone:ro,Z
       - /etc/localtime:/etc/localtime:ro,Z
+    labels:
+      glance.name: Glance
+      glance.icon: dashboard
+      glance.url: http://home:8080
+      glance.description: Dashboard with feeds
+      glance.id: glance
 
   tailscale:
     image: tailscale/tailscale:latest

@@ -18,9 +18,10 @@ services:
     labels:
       glance.name: Jellyfin
       glance.icon: /assets/jellyfin.png
-      glance.url: https://media.${TAILNET}.ts.net
+      glance.url: https://media.${TAILNET_NAME}.ts.net
       glance.description: Media server
       glance.id: jellyfin
+      glance.category: user-facing
 
   tailscale:
     image: tailscale/tailscale:latest
