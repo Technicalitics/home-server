@@ -45,7 +45,7 @@ services:
       glance.name: Invidious
       glance.icon: /assets/invidious.png
       glance.url: https://youtube.${TAILNET_NAME}.ts.net
-      glance.description: YouTube frontend
+      glance.description: Private YouTube frontend
       glance.id: invidious
       glance.category: user-facing
 

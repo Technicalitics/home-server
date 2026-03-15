@@ -6,10 +6,11 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - ./config:/app/config:ro,Z
-      - ./assets:/app/assets:ro,Z
+      - /srv/docker/data/glance/config:/app/config:ro,Z
+      - /srv/docker/data/glance/assets:/app/assets:ro,Z
       - /etc/timezone:/etc/timezone:ro,Z
       - /etc/localtime:/etc/localtime:ro,Z
+      - /var/run/docker.sock:/var/run/docker.sock:ro,z
     labels:
       glance.name: Glance
       glance.icon: dashboard
@@ -28,9 +29,12 @@ services:
       - TS_EXTRA_ARGS=--accept-dns
     hostname: home
     volumes:
-      - glance_tailscale_state:/var/lib/tailscale:z
+      - tailscale_state:/var/lib/tailscale:z
     devices:
       - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.parent: glance
+      glance.name: Tailscale
 
 networks:
   default:
@@ -38,4 +42,4 @@ networks:
     external: true
 
 volumes:
-  glance_tailscale_state:
+  tailscale_state:

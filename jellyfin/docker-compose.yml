@@ -25,9 +25,9 @@ services:
 
   tailscale:
     image: tailscale/tailscale:latest
-    container_name: jellyfin-ts
     command:
       - /usr/local/bin/containerboot
+    container_name: jellyfin-ts
     devices:
       - /dev/net/tun:/dev/net/tun
     env_file:
