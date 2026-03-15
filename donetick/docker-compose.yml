@@ -13,6 +13,12 @@ services:
     environment:
       - DT_ENV=selfhosted
       - DT_SQLITE_PATH=/donetick-data/donetick.db
+    labels:
+      glance.name: Donetick
+      glance.icon: /assets/donetick.png
+      glance.url: https://tasks.${TAILNET}.ts.net
+      glance.description: Task management
+      glance.id: donetick
 
   tailscale:
     command:
@@ -30,6 +36,9 @@ services:
     restart: unless-stopped
     volumes:
       - tailscale-state:/var/lib/tailscale:z
+    labels:
+      glance.parent: donetick
+      glance.name: Tailscale
 
 networks:
   default:

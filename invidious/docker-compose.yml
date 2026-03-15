@@ -41,6 +41,12 @@ services:
         condition: service_healthy
     extra_hosts:
     - "host.docker.internal:host-gateway"
+    labels:
+      glance.name: Invidious
+      glance.icon: /assets/invidious.png
+      glance.url: https://youtube.${TAILNET_NAME}.ts.net
+      glance.description: YouTube frontend
+      glance.id: invidious
 
   invidious-db:
     image: docker.io/library/postgres:14
@@ -63,6 +69,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    labels:
+      glance.parent: invidious
+      glance.name: DB
 
   invidious_companion:
     image: quay.io/invidious/invidious-companion:latest
@@ -88,6 +97,9 @@ services:
       - no-new-privileges:true
     volumes:
       - companioncache:/var/tmp/youtubei.js:z
+    labels:
+      glance.parent: invidious
+      glance.name: Companion
 
   tailscale:
     image: tailscale/tailscale:latest
@@ -103,6 +115,9 @@ services:
       - tailscale_state:/var/lib/tailscale:z
     devices:
       - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.parent: invidious
+      glance.name: Tailscale
 
 networks:
   default:
