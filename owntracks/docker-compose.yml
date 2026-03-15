@@ -1,0 +1,79 @@
+services:
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - /srv/docker/data/owntracks/mosquitto/config:/mosquitto/config:Z
+      - /srv/docker/data/owntracks/mosquitto/data:/mosquitto/data:Z
+      - /srv/docker/data/owntracks/mosquitto/log:/mosquitto/log:Z
+    labels:
+      glance.name: MQTT
+      glance.parent: owntracks
+
+  frontend:
+    image: owntracks/frontend
+    container_name: owntracks-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:80:80"
+    environment:
+      - SERVER_HOST=recorder
+      - SERVER_PORT=8083
+    labels:
+      glance.name: OwnTracks
+      glance.icon: /assets/owntracks.png
+      glance.url: https://tracks.${TAILNET_NAME}.ts.net
+      glance.description: Location Sharing
+      glance.id: owntracks
+      glance.category: user-facing
+
+  recorder:
+    image: owntracks/recorder:latest
+    container_name: owntracks-recorder
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8083:8083"
+    env_file:
+      - .env
+    environment:
+      - OTR_HOST=mqtt
+      - OTR_PORT=1883
+      - OTR_TOPIC=owntracks/#
+      - TZ=UTC
+    volumes:
+      - /srv/docker/data/owntracks/recorder/config:/config:Z
+      - /srv/docker/data/owntracks/recorder/store:/store:Z
+    depends_on:
+      - mqtt
+    labels:
+      glance.name: Recorder
+      glance.parent: owntracks
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: owntracks-ts
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_EXTRA_ARGS=--accept-dns
+    hostname: tracks
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.name: Tailscale
+      glance.parent: owntracks
+
+networks:
+  default:
+    name: owntracks_default
+    external: true
+
+volumes:
+  tailscale_state:

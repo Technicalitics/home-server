@@ -13,6 +13,8 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [jellyfin](jellyfin/README.md) | Media server | 8096, 8920 |
 | [donetick](donetick/README.md) | Todo list with badges | 2021 |
 | [invidious](invidious/README.md) | YouTube front-end | 3000 |
+| [glance](glance/README.md) | Dashboard with feeds | 8080 |
+| [owntracks](owntracks/README.md) | Location tracking | 80, 8083 |
 
 ## Repository Structure
 
@@ -37,6 +39,14 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   │   └── selfhosted.yaml
 │   └── README.md
 ├── invidious/           # Invidious YouTube frontend
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── glance/             # Glance dashboard
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── owntracks/           # OwnTracks location tracking
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md
