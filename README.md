@@ -16,6 +16,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [glance](glance/README.md) | Dashboard with feeds | 8080 |
 | [owntracks](owntracks/README.md) | Location tracking | 80, 8083 |
 | [actual_budget](actual_budget/README.md) | Budget tracking | 5006 |
+| [ntfy](ntfy/README.md) | Push notifications | 5027 |
 
 ## Repository Structure
 
@@ -52,6 +53,10 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── .env.example
 │   └── README.md
 ├── actual_budget/       # Actual Budget
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── ntfy/               # Ntfy push notifications
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md
