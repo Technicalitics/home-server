@@ -1,0 +1,65 @@
+services:
+  languagetool:
+    image: meyay/languagetool:latest
+    container_name: languagetool
+    restart: unless-stopped
+    network_mode: "service:tailscale"
+    environment:
+      - JAVA_XMX=2048m
+      - JAVA_XMS=512m
+      - LANG=en_US.UTF-8
+      - LANGUAGE=en_US:en
+      - LC_ALL=en_US.UTF-8
+      - download_ngrams_for_langs=en,de
+      - langtool_languageModel=/ngrams
+      - langtool_fasttextBinary=/usr/bin/fasttext
+      - langtool_fasttextModel=/fasttext/lid.176.bin
+      - LISTEN_PORT=8081
+      - DISABLE_FASTTEXT=false
+    user: "783:783"
+    volumes:
+      - /srv/docker/data/languagetool/fasttext:/fasttext:Z
+      - /srv/docker/data/languagetool/ngrams:/ngrams:Z
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    labels:
+      glance.name: LanguageTool
+      glance.icon: /assets/languagetool.png
+      glance.url: https://languagetool.${TAILNET_NAME}.ts.net
+      glance.description: Grammar Checker
+      glance.id: languagetool
+      glance.category: user-facing
+    depends_on:
+      tailscale:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/v2/check -d 'language=en&text=test' || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: languagetool-ts
+    restart: unless-stopped
+    command:
+      - /usr/local/bin/containerboot
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+    hostname: languagetool
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.name: Tailscale
+      glance.parent: languagetool
+
+volumes:
+  tailscale_state:
