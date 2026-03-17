@@ -18,6 +18,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [actual_budget](actual_budget/README.md) | Budget tracking | 5006 |
 | [ntfy](ntfy/README.md) | Push notifications | 80 |
 | [languagetool](languagetool/README.md) | Grammar checker | 8081 |
+| [linguacafe](linguacafe/README.md) | Language learning | 9191 |
 
 ## Repository Structure
 
@@ -61,7 +62,11 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md
-├── languagetool/       # LanguageTool grammar checker
+├── languagetool/        # LanguageTool grammar checker
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── linguacafe/         # LinguaCafe language learning
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md
