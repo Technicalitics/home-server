@@ -19,6 +19,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [ntfy](ntfy/README.md) | Push notifications | 80 |
 | [languagetool](languagetool/README.md) | Grammar checker | 8081 |
 | [linguacafe](linguacafe/README.md) | Language learning | 9191 |
+| [pinepods](pinepods/README.md) | Podcast management | 8040 |
 
 ## Repository Structure
 
@@ -67,6 +68,10 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── .env.example
 │   └── README.md
 ├── linguacafe/         # LinguaCafe language learning
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── pinepods/         # Pinepods podcast management
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md

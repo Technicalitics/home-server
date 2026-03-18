@@ -1,0 +1,84 @@
+services:
+  db:
+    image: postgres:17
+    container_name: pinepods-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /mnt/media/podcasts/pinepods/pgdata:/var/lib/postgresql/data:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      glance.name: Database
+      glance.parent: pinepods
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: pinepods-valkey
+    restart: unless-stopped
+    volumes:
+      - /mnt/media/podcasts/pinepods/valkey:/data:Z
+    labels:
+      glance.name: Valkey
+      glance.parent: pinepods
+
+  pinepods:
+    image: madeofpendletonwool/pinepods:latest
+    container_name: pinepods
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DEBUG_MODE=false
+      - DB_HOST=db
+      - VALKEY_HOST=valkey
+      - TZ=America/New_York
+      - DB_PORT=5432
+      - DB_TYPE=postgresql
+      - PEOPLE_API_URL=https://people.pinepods.online
+      - SEARCH_API_URL=https://search.pinepods.online/api/search
+      - PUID=911
+      - PGID=911
+      - APP_ROOT=/pinepods
+    volumes:
+      - /mnt/media/podcasts/pinepods/backups:/opt/pinepods/backups:Z
+      - /mnt/media/podcasts/pinepods/downloads:/opt/pinepods/downloads:Z
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      glance.name: PinePods
+      glance.icon: /assets/pinepods.png
+      glance.url: https://podcasts.${TAILNET_NAME}.ts.net
+      glance.description: Complete Podcast Ecosystem
+      glance.id: pinepods
+      glance.category: user-facing
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: pinepods-ts
+    restart: unless-stopped
+    command:
+      - /usr/local/bin/containerboot
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+    hostname: podcasts
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.name: Tailscale
+      glance.parent: pinepods
+
+volumes:
+  tailscale_state:
