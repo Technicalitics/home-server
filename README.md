@@ -20,6 +20,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [languagetool](languagetool/README.md) | Grammar checker | 8081 |
 | [linguacafe](linguacafe/README.md) | Language learning | 9191 |
 | [pinepods](pinepods/README.md) | Podcast management | 8040 |
+| [neko](neko/README.md) | Virtual browser | WebRTC |
 
 ## Repository Structure
 
@@ -72,6 +73,10 @@ Documentation of my self-hosted home server stack using Docker Compose.
 │   ├── .env.example
 │   └── README.md
 ├── pinepods/         # Pinepods podcast management
+│   ├── docker-compose.yml
+│   ├── .env.example
+│   └── README.md
+├── neko/              # Neko virtual browser
 │   ├── docker-compose.yml
 │   ├── .env.example
 │   └── README.md

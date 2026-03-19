@@ -1,0 +1,48 @@
+services:
+  neko:
+    image: ghcr.io/m1k1o/neko/firefox:latest
+    container_name: neko
+    restart: "unless-stopped"
+    shm_size: "2gb"
+    network_mode: service:tailscale
+    volumes:
+      - /srv/docker/data/neko/settings/:/home/neko/.mozilla/firefox:z
+      - /srv/docker/data/neko/policy.json:/etc/brave/policies/managed/policy.json:z
+    environment:
+      NEKO_DESKTOP_SCREEN: '1920x1080@60'
+      NEKO_WEBRTC_EPR: "56000-56100"
+      NEKO_WEBRTC_ICELITE: 1
+      NEKO_WEBRTC_NAT1TO1: ${SERVER_TAILNET_IP}
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${USER_PASSWORD}
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    labels:
+      glance.name: Neko
+      glance.icon: /assets/neko.png
+      glance.url: https://neko.${TAILNET_NAME}.ts.net
+      glance.description: Virtual Browser
+      glance.id: neko
+      glance.category: user-facing
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: neko-ts
+    restart: unless-stopped
+    command: ["/usr/local/bin/containerboot"]
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+    hostname: neko
+    ports:
+      - "56000-56100:56000-56100/udp"
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+      glance.parent: neko
+      glance.label: Tailscale
+
+volumes:
+  tailscale_state:
