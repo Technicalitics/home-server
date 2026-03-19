@@ -20,6 +20,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [languagetool](languagetool/README.md) | Grammar checker | 8081 |
 | [linguacafe](linguacafe/README.md) | Language learning | 9191 |
 | [pinepods](pinepods/README.md) | Podcast management | 8040 |
+| [searxng](searxng/README.md) | Private metasearch | Tailscale |
 | [neko](neko/README.md) | Virtual browser | WebRTC |
 
 ## Structure
