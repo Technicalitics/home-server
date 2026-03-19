@@ -22,67 +22,9 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [pinepods](pinepods/README.md) | Podcast management | 8040 |
 | [neko](neko/README.md) | Virtual browser | WebRTC |
 
-## Repository Structure
+## Structure
 
-```
-.
-├── authentik/           # Authentik identity provider
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── immich/              # Immich photo management
-│   ├── docker-compose.yml
-│   .env.example
-│   └── README.md
-├── jellyfin/            # Jellyfin media server
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── donetick/            # Donetick todo with badges
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   ├── config/
-│   │   └── selfhosted.yaml
-│   └── README.md
-├── invidious/           # Invidious YouTube frontend
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── glance/             # Glance dashboard
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── owntracks/           # OwnTracks location tracking
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── actual_budget/       # Actual Budget
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── ntfy/               # Ntfy push notifications
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── languagetool/        # LanguageTool grammar checker
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── linguacafe/         # LinguaCafe language learning
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── pinepods/         # Pinepods podcast management
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-├── neko/              # Neko virtual browser
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   └── README.md
-└── docs/                # Shared documentation
-    └── INSTRUCTIONS.md
-```
+Each service directory contains `docker-compose.yml`, `.env.example`, and `README.md`.
 
 ## Prerequisites
 
