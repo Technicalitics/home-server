@@ -3,8 +3,8 @@ services:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
-      - ${UPLOAD_LOCATION}:/data
-      - /etc/localtime:/etc/localtime:ro
+      - ${UPLOAD_LOCATION}:/data:z
+      - /etc/localtime:/etc/localtime:ro,z
     env_file:
       - .env
     ports:
@@ -52,7 +52,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data:z
     shm_size: 128mb
     restart: always
     labels:
@@ -60,21 +60,21 @@ services:
       glance.name: DB
 
   tailscale:
+    image: tailscale/tailscale:latest
     command:
       - /usr/local/bin/containerboot
     container_name: immich-ts
+    restart: always
     devices:
       - /dev/net/tun:/dev/net/tun
     env_file:
       - .env
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_EXTRA_ARGS=--accept-dns
+      - TS_ACCEPT_DNS=true
     hostname: images
-    image: tailscale/tailscale:latest
-    restart: always
     volumes:
-      - immich_tailscale-state:/var/lib/tailscale
+      - immich_tailscale-state:/var/lib/tailscale:z
     labels:
       glance.parent: immich
       glance.name: Tailscale

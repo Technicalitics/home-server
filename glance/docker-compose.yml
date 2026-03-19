@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
+    security_opt:
+      - label:disable # Prevent issues with SELinux
     volumes:
       - /srv/docker/data/glance/config:/app/config:ro,Z
       - /srv/docker/data/glance/assets:/app/assets:ro,Z
