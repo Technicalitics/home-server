@@ -1,0 +1,28 @@
+use_default_settings:
+  engines:
+    remove:
+      - google
+
+server:
+  limiter: false
+  image_proxy: true
+  bind_address: "0.0.0.0"
+  port: 8080
+  base_url: https://search.CHANGEME.ts.net
+  secret_key: "CHANGEME"
+
+search:
+  safe_search: 1
+
+ui:
+  default_theme: simple
+  theme_args:
+    simple_style: dark
+
+plugins:
+  searx.plugins.calculator.SXNGPlugin:
+    active: true
+  searx.plugins.unit_converter.SXNGPlugin:
+    active: true
+  searx.plugins.tracker_url_remover.SXNGPlugin:
+    active: true
