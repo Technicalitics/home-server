@@ -21,6 +21,8 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [linguacafe](linguacafe/README.md) | Language learning | 9191 |
 | [pinepods](pinepods/README.md) | Podcast management | 8040 |
 | [searxng](searxng/README.md) | Private metasearch | Tailscale |
+| [vdoninja](vdoninja/README.md) | Video streaming | Tailscale |
+| [sparkyfitness](sparkyfitness/README.md) | Fitness tracker | 3004 |
 | [neko](neko/README.md) | Virtual browser | WebRTC |
 
 ## Structure
