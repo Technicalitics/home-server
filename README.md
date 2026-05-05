@@ -45,6 +45,10 @@ Each service directory contains `docker-compose.yml`, `.env.example`, and `READM
 
 See [docs/INSTRUCTIONS.md](docs/INSTRUCTIONS.md) for common setup details and [individual service READMEs](*/README.md) for service-specific configuration.
 
+## Bulk Updates
+
+Use `update_all.sh` to update all services at once with parallel execution. See [docs/UPDATE.md](docs/UPDATE.md) for details on principles, usage, and customization.
+
 ## Security Notes
 
 - **Never commit `.env` files** - they contain secrets
