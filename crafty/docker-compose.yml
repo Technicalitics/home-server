@@ -1,0 +1,49 @@
+services:
+  crafty:
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    container_name: crafty
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-UTC}
+    volumes:
+      - /srv/docker/data/crafty/backups:/crafty/backups:Z
+      - /srv/docker/data/crafty/logs:/crafty/logs:Z
+      - /srv/docker/data/crafty/servers:/crafty/servers:Z
+      - /srv/docker/data/crafty/config:/crafty/app/config:Z
+      - /srv/docker/data/crafty/import:/crafty/import:Z
+    labels:
+      glance.name: Crafty Controller
+      glance.icon: /assets/crafty.png
+      glance.url: https://crafty.${TAILNET_NAME}.ts.net
+      glance.description: Minecraft Server Manager
+      glance.id: crafty
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    command:
+      - /usr/local/bin/containerboot
+    container_name: crafty-ts
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+    hostname: crafty
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    labels:
+      glance.name: Tailscale
+      glance.parent: crafty
+
+volumes:
+  tailscale_state:
