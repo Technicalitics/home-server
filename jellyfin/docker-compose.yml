@@ -2,13 +2,14 @@ services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     environment:
       - TZ=${TZ:-UTC}
-    ports:
-      - "8096:8096"
-      - "8920:8920"
     restart: unless-stopped
     volumes:
       - /srv/docker/data/jellyfin/config:/config:z
@@ -24,29 +25,39 @@ services:
       glance.category: user-facing
 
   tailscale:
-    image: tailscale/tailscale:latest
+    image: dhi.io/tailscale:1
+    container_name: jellyfin-ts
+    restart: unless-stopped
     command:
       - /usr/local/bin/containerboot
-    container_name: jellyfin-ts
-    devices:
-      - /dev/net/tun:/dev/net/tun
     env_file:
       - .env
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_ACCEPT_DNS=true
+      - TS_SERVE_CONFIG=/config/serve.json
     hostname: media
-    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
+    devices:
+      - /dev/net/tun:/dev/net/tun
     volumes:
       - tailscale-state:/var/lib/tailscale:z
+      - ./serve.json:/config/serve.json:ro,Z
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     labels:
       glance.parent: jellyfin
       glance.name: Tailscale
-
-networks:
-  default:
-    name: jellyfin_default
-    external: true
 
 volumes:
   tailscale-state:

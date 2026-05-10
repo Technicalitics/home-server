@@ -24,7 +24,7 @@ services:
       glance.category: user-facing
 
   tailscale:
-    image: tailscale/tailscale:latest
+    image: dhi.io/tailscale:1
     container_name: neko-ts
     restart: unless-stopped
     command: ["/usr/local/bin/containerboot"]
@@ -33,13 +33,28 @@ services:
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_ACCEPT_DNS=true
+      - TS_SERVE_CONFIG=/config/serve.json
     hostname: neko
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
     ports:
       - "56000-56100:56000-56100/udp"
     volumes:
       - tailscale_state:/var/lib/tailscale:z
+      - ./serve.json:/config/serve.json:ro,Z
     devices:
       - /dev/net/tun:/dev/net/tun
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     labels:
       glance.parent: neko
       glance.label: Tailscale

@@ -18,7 +18,31 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
    - `backups` - Backup location
    - `downloads` - Download location
 
-3. Start: `docker compose up -d`
+   **Note:** The paths shown below are specific to this server's ZFS pool mounted outside the OS drive. Customize these paths to match your own setup.
+
+3. Fix permissions for hardened images (required before first start):
+   This service uses Docker Hardened Images (`dhi.io`) which run as non-root users:
+
+   | Service | Image | User | UID | Directory |
+   |---------|-------|------|-----|----------|
+   | PostgreSQL | `dhi.io/postgres:17-alpine3.22` | postgres | 70 | Your PostgreSQL data path |
+   | Valkey | `dhi.io/valkey:9` | nonroot | 65532 | Your Valkey data path |
+
+   **For the default paths in this setup:**
+   ```bash
+   # PostgreSQL (UID 70)
+   sudo chown -R 70:70 /mnt/media/podcasts/pinepods/pgdata
+
+   # Valkey (UID 65532)
+   sudo chown -R 65532:65532 /mnt/media/podcasts/pinepods/valkey
+   ```
+
+   **To find UIDs for any hardened image:**
+   ```bash
+   docker run --rm dhi.io/IMAGE_NAME id
+   ```
+
+4. Start: `docker compose up -d`
 
 ## Access
 

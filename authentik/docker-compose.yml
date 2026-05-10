@@ -1,9 +1,13 @@
 services:
   postgresql:
-    image: docker.io/library/postgres:16-alpine
+    image: dhi.io/postgres:18-alpine3.22
     container_name: authentik_postgres
     env_file:
       - .env
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
     environment:
       - POSTGRES_DB=${PG_DB:-authentik}
       - POSTGRES_PASSWORD=${PG_PASS}
@@ -14,11 +18,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
-    expose:
-      - "5432/tcp"
     restart: unless-stopped
     volumes:
-      - database:/var/lib/postgresql/data:z
+      - authentik_database:/var/lib/postgresql/data:z
     labels:
       glance.parent: authentik
       glance.name: DB
@@ -30,13 +32,16 @@ services:
     env_file:
       - .env
     environment:
-      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__HOST=127.0.0.1
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
-    ports:
-      - "9000:9000/tcp"
-      - "9443:9443/tcp"
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
+      postgresql:
+        condition: service_healthy
     restart: unless-stopped
     user: "1000"
     volumes:
@@ -55,8 +60,12 @@ services:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
     env_file:
       - .env
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
     environment:
-      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__HOST=127.0.0.1
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
@@ -73,29 +82,40 @@ services:
       glance.name: Worker
 
   tailscale:
+    image: dhi.io/tailscale:1
     container_name: authentik-ts
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    restart: unless-stopped
+    command:
+      - /usr/local/bin/containerboot
     env_file:
       - .env
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_ACCEPT_DNS=true
-      - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_AUTH_ONCE=true
+      - TS_SERVE_CONFIG=/config/serve.json
     hostname: auth
-    image: tailscale/tailscale:latest
-    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
+    devices:
+      - /dev/net/tun:/dev/net/tun
     volumes:
-      - tailscale-state:/var/lib/tailscale:Z
+      - tailscale-state:/var/lib/tailscale:z
+      - /srv/docker/data/authentik/serve/serve.json:/config/serve.json:ro,Z
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     labels:
       glance.parent: authentik
       glance.name: Tailscale
 
-networks:
-  default:
-    name: authentik_default
-
 volumes:
-  database:
+  authentik_database:
   tailscale-state:

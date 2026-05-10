@@ -74,7 +74,7 @@ services:
       glance.category: user-facing
 
   tailscale:
-    image: tailscale/tailscale:latest
+    image: dhi.io/tailscale:1
     container_name: linguacafe-ts
     restart: unless-stopped
     command:

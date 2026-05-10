@@ -1,0 +1,81 @@
+services:
+  cryptpad:
+    image: cryptpad/cryptpad:${CRYPTPAD_TAG:-latest}
+    container_name: cryptpad
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - CPAD_MAIN_DOMAIN=https://cloud.${TAILNET_NAME}.ts.net
+      - CPAD_SANDBOX_DOMAIN=https://cloud.${TAILNET_NAME}.ts.net:8443
+      - CPAD_CONF=/cryptpad/config/config.js
+    volumes:
+      - /mnt/media/cryptpad/blob:/cryptpad/blob:Z
+      - /mnt/media/cryptpad/block:/cryptpad/block:Z
+      - /mnt/media/cryptpad/data:/cryptpad/data:Z
+      - /mnt/media/cryptpad/files:/cryptpad/datastore:Z
+      - /srv/docker/data/cryptpad/customize:/cryptpad/customize:Z
+      - /srv/docker/data/cryptpad/config:/cryptpad/config:ro,Z
+      - ./sso:/cryptpad/lib/plugins/sso:ro,Z
+    labels:
+      glance.name: CryptPad
+      glance.icon: /assets/cryptpad.png
+      glance.url: https://cloud.${TAILNET_NAME}.ts.net
+      glance.description: Encrypted Office Suite
+      glance.id: cryptpad
+      glance.category: user-facing
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    init: true
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: cryptpad-ts
+    restart: unless-stopped
+    command:
+      - /usr/local/bin/containerboot
+    env_file:
+      - .env
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_ACCEPT_DNS=true
+      - TS_SERVE_CONFIG=/config/serve.json
+      - TS_USERSPACE=false
+    hostname: cloud
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+      - /srv/docker/data/cryptpad/serve/serve.json:/config/serve.json:ro,Z
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    labels:
+      glance.name: Tailscale
+      glance.parent: cryptpad
+
+volumes:
+  tailscale_state:

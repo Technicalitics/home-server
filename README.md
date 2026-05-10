@@ -19,6 +19,7 @@ Documentation of my self-hosted home server stack using Docker Compose.
 | [ntfy](ntfy/README.md) | Push notifications | 80 |
 | [languagetool](languagetool/README.md) | Grammar checker | 8081 |
 | [linguacafe](linguacafe/README.md) | Language learning | 9191 |
+| [media_stack](media_stack/README.md) | Media download & management | 5055, 7878, 8080, 8989, 9696, Tailscale |
 | [pinepods](pinepods/README.md) | Podcast management | 8040 |
 | [searxng](searxng/README.md) | Private metasearch | Tailscale |
 | [vdoninja](vdoninja/README.md) | Video streaming | Tailscale |

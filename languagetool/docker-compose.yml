@@ -42,7 +42,7 @@ services:
       start_period: 120s
 
   tailscale:
-    image: tailscale/tailscale:latest
+    image: dhi.io/tailscale:1
     container_name: languagetool-ts
     restart: unless-stopped
     command:
@@ -52,11 +52,26 @@ services:
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_ACCEPT_DNS=true
+      - TS_SERVE_CONFIG=/config/serve.json
     hostname: languagetool
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
     volumes:
       - tailscale_state:/var/lib/tailscale:z
+      - ./serve.json:/config/serve.json:ro,Z
     devices:
       - /dev/net/tun:/dev/net/tun
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     labels:
       glance.name: Tailscale
       glance.parent: languagetool

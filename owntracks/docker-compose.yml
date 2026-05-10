@@ -2,9 +2,10 @@ services:
   mqtt:
     image: eclipse-mosquitto:2
     container_name: mqtt
-    restart: unless-stopped
-    ports:
-      - "1883:1883"
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
     volumes:
       - /srv/docker/data/owntracks/mosquitto/config:/mosquitto/config:Z
       - /srv/docker/data/owntracks/mosquitto/data:/mosquitto/data:Z
@@ -16,11 +17,12 @@ services:
   frontend:
     image: owntracks/frontend
     container_name: owntracks-frontend
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:80:80"
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
     environment:
-      - SERVER_HOST=recorder
+      - SERVER_HOST=127.0.0.1
       - SERVER_PORT=8083
     labels:
       glance.name: OwnTracks
@@ -33,47 +35,60 @@ services:
   recorder:
     image: owntracks/recorder:latest
     container_name: owntracks-recorder
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8083:8083"
+    network_mode: service:tailscale
+    depends_on:
+      tailscale:
+        condition: service_started
+      mqtt:
+        condition: service_started
     env_file:
       - .env
     environment:
-      - OTR_HOST=mqtt
+      - OTR_HOST=127.0.0.1
       - OTR_PORT=1883
       - OTR_TOPIC=owntracks/#
       - TZ=UTC
     volumes:
       - /srv/docker/data/owntracks/recorder/config:/config:Z
       - /srv/docker/data/owntracks/recorder/store:/store:Z
-    depends_on:
-      - mqtt
     labels:
       glance.name: Recorder
       glance.parent: owntracks
 
   tailscale:
-    image: tailscale/tailscale:latest
+    image: dhi.io/tailscale:1
     container_name: owntracks-ts
     restart: unless-stopped
+    command:
+      - /usr/local/bin/containerboot
     env_file:
       - .env
     environment:
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_EXTRA_ARGS=--accept-dns
+      - TS_ACCEPT_DNS=true
+      - TS_SERVE_CONFIG=/config/serve.json
     hostname: tracks
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
+    cap_add:
+      - NET_ADMIN
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
     devices:
       - /dev/net/tun:/dev/net/tun
+    volumes:
+      - tailscale_state:/var/lib/tailscale:z
+      - ./serve.json:/config/serve.json:ro,Z
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     labels:
       glance.name: Tailscale
       glance.parent: owntracks
-
-networks:
-  default:
-    name: owntracks_default
-    external: true
 
 volumes:
   tailscale_state:

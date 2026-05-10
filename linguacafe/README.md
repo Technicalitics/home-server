@@ -1,5 +1,7 @@
 # LinguaCafe
 
+## Removed Due to Little Use on May 6, 2025
+
 Self-hosted language learning application. Learn languages through reading with vocabulary tracking and flashcards.
 
 For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.md).

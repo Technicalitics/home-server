@@ -1,0 +1,14 @@
+[commands]
+apply_updates=True
+download_updates=True
+upgrade_type=security
+reboot=when-needed
+reboot_command=shutdown -r +5 "Rebooting for updates"
+
+[emitters]
+emit_via=command, motd, stdio
+system_name=server
+
+[command]
+command_format = '/usr/bin/curl -H "Title: DNF Updates" -H "Priority: default" -H "Tags: package" -d @- https://NTFY_INSTANCE_PLACEHOLDER/TOPIC_PLACEHOLDER'
+stdin_format="{body}"

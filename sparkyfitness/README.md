@@ -1,5 +1,7 @@
 # SparkyFitness
 
+## Removed Due to Little Use on May 6, 2026
+
 Self-hosted fitness tracking application. Alternative to MyFitnessPal with nutrition, exercise, water intake, and body measurements tracking.
 
 ## Quick Start

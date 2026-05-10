@@ -1,0 +1,11 @@
+// SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+module.exports = {
+    httpUnsafeOrigin: 'https://cloud.YOUR-TAILNET.ts.net',
+    httpSafeOrigin: 'https://cloud.YOUR-TAILNET.ts.net:8443',
+    httpAddress: '0.0.0.0',
+    adminKeys: [],
+    installMethod: 'docker',
+};
