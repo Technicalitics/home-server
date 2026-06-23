@@ -3,10 +3,12 @@ services:
     image: searxng/searxng:latest
     container_name: searxng
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8080"
     env_file:
       - .env
     environment:
-      - SEARXNG_BASE_URL=https://search.${TAILNET_NAME}.ts.net/
+      - SEARXNG_BASE_URL=https://search.server.netbird.cloud/
       - SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
     volumes:
       - /srv/docker/data/searxng/settings.yml:/etc/searxng/settings.yml:ro,z
@@ -14,7 +16,7 @@ services:
     labels:
       glance.name: SearXNG
       glance.icon: /assets/searxng.png
-      glance.url: https://search.${TAILNET_NAME}.ts.net
+      glance.url: https://search.server.netbird.cloud
       glance.description: Private Metasearch Engine
       glance.id: searxng
       glance.category: user-facing
@@ -24,48 +26,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
     entrypoint:
       - /usr/local/searxng/entrypoint.sh
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: searxng-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: search
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.name: Tailscale
-      glance.parent: searxng
-
 volumes:
   searxng_data:
-  tailscale_state:

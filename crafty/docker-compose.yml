@@ -3,6 +3,9 @@ services:
     image: registry.gitlab.com/crafty-controller/crafty-4:latest
     container_name: crafty
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8443:8443"
+      - "25500-25600:25500-25600"
     environment:
       - TZ=${TZ:-UTC}
     volumes:
@@ -14,49 +17,6 @@ services:
     labels:
       glance.name: Crafty Controller
       glance.icon: /assets/crafty.png
-      glance.url: https://crafty.${TAILNET_NAME}.ts.net
+      glance.url: https://crafty.server.netbird.cloud
       glance.description: Minecraft Server Manager
       glance.id: crafty
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
-
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: crafty-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: crafty
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.name: Tailscale
-      glance.parent: crafty
-
-volumes:
-  tailscale_state:

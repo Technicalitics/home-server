@@ -20,6 +20,9 @@ services:
         limits:
           memory: 256M
           cpus: "0.5"
+    labels:
+      glance.parent: qbittorrent
+      glance.name: gluetun
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.2.0
@@ -42,6 +45,11 @@ services:
         limits:
           memory: 1G
           cpus: "1.0"
+    labels:
+      glance.name: QBitTorrent
+      glance.icon: /assets/qbittorrent.png
+      glance.description: Torrent Client
+      glance.id: qbittorrent
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:4.0.17
@@ -64,6 +72,11 @@ services:
         limits:
           memory: 1G
           cpus: "0.5"
+    labels:
+      glance.name: Sonarr
+      glance.icon: /assets/sonarr.png
+      glance.description: TV Manager for Torrents
+      glance.id: sonarr
 
   radarr:
     image: lscr.io/linuxserver/radarr:6.1.1
@@ -86,6 +99,11 @@ services:
         limits:
           memory: 1G
           cpus: "0.5"
+    labels:
+      glance.name: Radarr
+      glance.icon: /assets/radarr.png
+      glance.description: Movie Manager for Torrents
+      glance.id: radarr
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -102,6 +120,11 @@ services:
         limits:
           memory: 1G
           cpus: "1.0"
+    labels:
+      glance.name: Flaresolverr
+      glance.icon: /assets/flaresolverr.png
+      glance.description: Fix issues with Cloudflare
+      glance.id: flaresolverr
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:2.3.5
@@ -122,25 +145,40 @@ services:
         limits:
           memory: 512M
           cpus: "0.5"
+    labels:
+      glance.name: Prowlarr
+      glance.icon: /assets/prowlarr.png
+      glance.description: Indexer Management
+      glance.id: prowlarr
 
   seerr:
     image: seerr/seerr:v3
     container_name: media-seerr
+    network_mode: service:netbird
+    depends_on:
+      netbird:
+        condition: service_started
     restart: unless-stopped
     init: true
-    networks:
-      - media_network
-    ports:
-      - "127.0.0.1:5055:5055"
     environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - TZ=${TZ:-UTC}
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
     volumes:
       - /srv/docker/data/seerr:/app/config:z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/cert.pem:ro,z
     deploy:
       resources:
         limits:
           memory: 1G
           cpus: "0.5"
+    labels:
+      glance.name: Seerr
+      glance.icon: /assets/seerr.png
+      glance.url: https://requests.server.netbird.cloud
+      glance.description: Media Discovery for Jellyfin
+      glance.id: seer
 
   maintainerr:
     image: ghcr.io/maintainerr/maintainerr:3
@@ -153,48 +191,56 @@ services:
       - "127.0.0.1:6246:6246"
     environment:
       - TZ=${TZ:-UTC}
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
     volumes:
       - /srv/docker/data/maintainerr:/opt/data:z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/cert.pem:ro,z
     deploy:
       resources:
         limits:
           memory: 512M
           cpus: "0.5"
+    labels:
+      glance.name: Maintainerr
+      glance.icon: /assets/maintainerr.png
+      glance.description: Automated Media Library Manager
+      glance.id: maintainerr
 
-  media-ts:
-    image: dhi.io/tailscale:1
-    container_name: media-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: media-seerr-nb
     hostname: requests
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - media_tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:5055:5055"
     networks:
       - media_network
     deploy:
       resources:
         limits:
           memory: 128M
-          cpus: "0.25"
+    labels:
+      glance.parent: seerr
+      glance.name: Netbird
 
 networks:
   media_network:
@@ -202,4 +248,4 @@ networks:
     driver: bridge
 
 volumes:
-  media_tailscale_state:
+  netbird-state:

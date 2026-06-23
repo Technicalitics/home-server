@@ -2,13 +2,14 @@ services:
   donetick:
     image: donetick/donetick
     container_name: donetick
+    network_mode: service:netbird
+    depends_on:
+      netbird:
+        condition: service_started
     env_file:
       - .env
     restart: unless-stopped
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
+    init: true
     volumes:
       - /srv/docker/data/donetick/data:/donetick-data:z
       - /srv/docker/data/donetick/config:/config:z
@@ -24,45 +25,44 @@ services:
     labels:
       glance.name: Donetick
       glance.icon: /assets/donetick.png
-      glance.url: https://tasks.${TAILNET_NAME}.ts.net
+      glance.url: https://tasks.server.netbird.cloud
       glance.description: Task management
       glance.id: donetick
       glance.category: user-facing
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: donetick-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: donetick-nb
     hostname: tasks
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - tailscale-state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:2021:2021"
     deploy:
       resources:
         limits:
           memory: 128M
     labels:
       glance.parent: donetick
-      glance.name: Tailscale
+      glance.name: Netbird
 
 volumes:
-  tailscale-state:
+  netbird-state:

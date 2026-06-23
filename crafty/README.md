@@ -6,10 +6,7 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TZ` - Timezone (optional, defaults to UTC)
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
+1. Copy `.env.example` to `.env` and configure `TZ` (optional).
 
 2. Create directories:
    ```bash
@@ -20,7 +17,8 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Access
 
-- Via Tailscale: https://crafty.<TAILNET_NAME>.ts.net:8443
+- Web UI: https://crafty.server.netbird.cloud
+- Local: http://localhost:8443
 - First run: Create admin account via the web UI
 
 ## Service-Specific Configuration
@@ -36,25 +34,18 @@ Hardcoded to my server setup:
 
 **To make portable:** Change to relative paths in docker-compose.yml.
 
-### Network
-
-This service uses `network_mode: service:tailscale` - Crafty shares Tailscale's network namespace and is only accessible via Tailscale, not directly via host ports.
-
-- Web UI (8443) - Access via Tailscale URL
-- Minecraft servers - Access directly via `crafty.<TAILNET_NAME>.ts.net:PORT`
-
-### Tailscale
-
-- Container: `crafty-ts`
-- Hostname: `crafty`
-- Minecraft ports (25500-25600, 19132) are accessible directly over Tailscale
-
 ### Ports
 
-| Port | Service |
-|------|---------|
-| 8443 | Crafty Web UI (HTTPS) |
-| 25500-25600 | Minecraft Java servers |
-| 19132 | Minecraft Bedrock server (UDP) |
+| Port(s) | Service |
+|---------|---------|
+| 8443 | Crafty Web UI (HTTPS) — proxied by Caddy |
+| 25500-25600 | Minecraft Java servers (TCP) — connect via host NetBird IP |
 
-All ports are accessible via Tailscale only.
+### Minecraft Server Access
+
+Minecraft ports (25500-25600) are published to all host interfaces. Connect via the server's NetBird IP:
+```
+Server Address: 100.x.x.x:25565
+```
+
+To find the host's NetBird IP: `netbird status` on the server. Restrict access by configuring your host firewall to only allow traffic from the NetBird interface.

@@ -9,15 +9,13 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 1. Copy `.env.example` to `.env` and configure:
    - `PG_PASS` - PostgreSQL password
    - `AUTHENTIK_SECRET_KEY` - Authentik secret
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
 
 2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:9000
-- API: https://localhost:9443
+- Web UI: https://auth.server.netbird.cloud
+- Local: http://localhost:9000
 
 ## Service-Specific Configuration
 
@@ -30,18 +28,16 @@ Hardcoded to my server setup:
 
 **To make portable:** Change to relative paths in docker-compose.yml.
 
-### Tailscale
+### Environment Variables
 
-- Container: `authentik-ts`
-- Hostname: `auth`
-
-### Running as Root
-
-The worker container runs as root because it needs to manage certificates and interact with the Docker socket.
+Key configuration:
+- `AUTHENTIK_SECRET_KEY` - Required secret key (generate with `openssl rand -base64 60`)
+- `PG_PASS` - PostgreSQL password
+- `AUTHENTIK_POSTGRESQL__HOST=postgresql` - (auto-set in compose, no need to configure)
 
 ### Ports
 
 | Port | Service |
 |------|---------|
-| 9000 | HTTP |
-| 9443 | HTTPS |
+| 9000 | HTTP (proxied by Caddy) |
+| 9443 | HTTPS (internal) |

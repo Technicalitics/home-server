@@ -6,20 +6,14 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
+1. Create data directory: `mkdir -p data`
 
-2. Create data directory: `mkdir -p data`
-
-3. Create external network: `docker network create actual_budget_default`
-
-4. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:5006
-- Via Tailscale: https://budget.<TAILNET_NAME>.ts.net
+- Web UI: https://budget.server.netbird.cloud
+- Local: http://localhost:5006
 
 ## Service-Specific Configuration
 
@@ -41,14 +35,3 @@ The server will create `server-files` and `user-files` subdirectories in the dat
 - Custom reports
 - API access
 - End-to-end encryption
-
-### Tailscale
-
-- Container: `actual-budget-ts`
-- Hostname: `budget`
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 5006 | HTTP |

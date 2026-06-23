@@ -6,18 +6,14 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
+1. Copy `.env.example` to `.env` and configure `TZ`.
 
-2. Create external network: `docker network create jellyfin_default`
-
-3. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:8096
-- HTTPS: https://localhost:8920
+- Web UI: https://media.server.netbird.cloud
+- Local: http://localhost:8096
 
 ## Service-Specific Configuration
 
@@ -34,15 +30,3 @@ Hardcoded to my server setup:
 ### Hardware Acceleration
 
 Container has access to `/dev/dri/renderD128` for GPU-accelerated transcoding. Remove `devices` section if not needed.
-
-### Tailscale
-
-- Container: `jellyfin-ts`
-- Hostname: `media`
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 8096 | HTTP |
-| 8920 | HTTPS |

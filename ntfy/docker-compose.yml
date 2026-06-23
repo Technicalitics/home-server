@@ -3,6 +3,8 @@ services:
     image: binwiederhier/ntfy
     container_name: ntfy
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8087:80"
     command:
       - serve
     environment:
@@ -13,7 +15,7 @@ services:
     labels:
       glance.name: ntfy
       glance.icon: /assets/ntfy.png
-      glance.url: https://ntfy.${TAILNET_NAME}.ts.net
+      glance.url: https://ntfy.server.netbird.cloud
       glance.description: Notification System
       glance.id: ntfy
     healthcheck:
@@ -23,51 +25,3 @@ services:
       retries: 3
       start_period: 40s
     init: true
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
-    entrypoint:
-      - ntfy
-
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: ntfy-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: ntfy
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.name: Tailscale
-      glance.parent: ntfy
-
-networks:
-  ntfy_default:
-    external: true
-
-volumes:
-  tailscale_state:

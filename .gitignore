@@ -1,24 +1,4 @@
-# Environment files (contain secrets)
+# ignore secrets files
 .env
-.env.*
-!.env.example
-
-
-
-# Logs
-*.log
-logs/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Backup files
-*.bak
-*.tmp
+**/env
+**/.env.bak

@@ -9,17 +9,13 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 1. Copy `.env.example` to `.env` and configure:
    - `HMAC_KEY` - Generate with `pwgen 16 1`
    - `INVIDIOUS_COMPANION_KEY` - Generate with `pwgen 16 1`
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
 
-2. Create external network: `docker network create invidious_default`
-
-3. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:3000
-- Via Tailscale: https://youtube.<TAILNET_NAME>.ts.net
+- Web UI: https://youtube.server.netbird.cloud
+- Local: http://localhost:3000
 
 ## Service-Specific Configuration
 
@@ -37,19 +33,13 @@ Configuration is inline in `docker-compose.yml` via `INVIDIOUS_CONFIG` environme
 - `db.*` - Database connection settings
 - `hmac_key` - Secret key (REQUIRED, generate with `pwgen 16 1`)
 - `invidious_companion_key` - Companion secret (generate with `pwgen 16 1`)
-- `domain` - Your Tailscale domain
+- `domain` - Your NetBird domain
 - `https_only: true` - Force HTTPS
 
 ### Data Storage
 
 - `invidious_postgresdata` - PostgreSQL database
 - `invidious_companioncache` - YouTube.js cache
-- `invidious_tailscale_state` - Tailscale state
-
-### Tailscale
-
-- Container: `invidious-ts`
-- Hostname: `youtube`
 
 ### Invidious Companion
 

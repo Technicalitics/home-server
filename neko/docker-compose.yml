@@ -4,7 +4,9 @@ services:
     container_name: neko
     restart: "unless-stopped"
     shm_size: "2gb"
-    network_mode: service:tailscale
+    ports:
+      - "127.0.0.1:8083:8080"
+      - "56000-56100:56000-56100/udp"
     volumes:
       - /srv/docker/data/neko/settings/:/home/neko/.mozilla/firefox:z
       - /srv/docker/data/neko/policy.json:/etc/brave/policies/managed/policy.json:z
@@ -12,52 +14,13 @@ services:
       NEKO_DESKTOP_SCREEN: '1920x1080@60'
       NEKO_WEBRTC_EPR: "56000-56100"
       NEKO_WEBRTC_ICELITE: 1
-      NEKO_WEBRTC_NAT1TO1: ${SERVER_TAILNET_IP}
+      NEKO_WEBRTC_NAT1TO1: "100.108.141.75"
       NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${USER_PASSWORD}
       NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     labels:
       glance.name: Neko
       glance.icon: /assets/neko.png
-      glance.url: https://neko.${TAILNET_NAME}.ts.net
+      glance.url: https://neko.server.netbird.cloud
       glance.description: Virtual Browser
       glance.id: neko
       glance.category: user-facing
-
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: neko-ts
-    restart: unless-stopped
-    command: ["/usr/local/bin/containerboot"]
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: neko
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    ports:
-      - "56000-56100:56000-56100/udp"
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.parent: neko
-      glance.label: Tailscale
-
-volumes:
-  tailscale_state:

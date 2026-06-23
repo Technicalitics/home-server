@@ -6,20 +6,15 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
-
-2. Create config files:
+1. Create config files:
    - `config/glance.yml` - Main configuration (download from [official docs](https://glance.github.io/configuration/))
 
-3. Create external network: `docker network create glance_default`
-
-4. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:8080
+- Web UI: https://home.server.netbird.cloud
+- Local: http://localhost:8082
 
 ## Service-Specific Configuration
 
@@ -52,14 +47,3 @@ Glance supports various widgets including:
 - And more...
 
 See [official documentation](https://glance.github.io/) for widget configuration.
-
-### Tailscale
-
-- Container: `glance-ts`
-- Hostname: `home`
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 8080 | HTTP |

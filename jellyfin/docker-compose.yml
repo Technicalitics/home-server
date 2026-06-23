@@ -2,12 +2,14 @@ services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
-    network_mode: service:tailscale
+    network_mode: service:netbird
     depends_on:
-      tailscale:
+      netbird:
         condition: service_started
     devices:
-      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/renderD129:/dev/dri/renderD129
+    group_add:
+      - '105'
     environment:
       - TZ=${TZ:-UTC}
     restart: unless-stopped
@@ -16,48 +18,50 @@ services:
       - /srv/docker/data/jellyfin/cache:/cache:z
       - /mnt/media/movies:/media/movies:ro,z
       - /mnt/media/music:/media/music:ro,z
+      - /mnt/media/tv:/media/tv:ro,z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/certs/ca-certificates.crt:ro,z
+      - /home/user/beau_music:/media/beau_music:z
     labels:
       glance.name: Jellyfin
       glance.icon: /assets/jellyfin.png
-      glance.url: https://media.${TAILNET_NAME}.ts.net
+      glance.url: https://media.server.netbird.cloud
       glance.description: Media server
       glance.id: jellyfin
       glance.category: user-facing
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: jellyfin-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: jellyfin-nb
     hostname: media
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - tailscale-state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:8096:8096"
     deploy:
       resources:
         limits:
           memory: 128M
     labels:
       glance.parent: jellyfin
-      glance.name: Tailscale
+      glance.name: NetBird
 
 volumes:
-  tailscale-state:
+  netbird-state:

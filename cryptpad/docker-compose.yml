@@ -2,13 +2,19 @@ services:
   cryptpad:
     image: cryptpad/cryptpad:${CRYPTPAD_TAG:-latest}
     container_name: cryptpad
+    network_mode: service:netbird
+    depends_on:
+      netbird:
+        condition: service_started
     restart: unless-stopped
+    init: true
     env_file:
       - .env
     environment:
-      - CPAD_MAIN_DOMAIN=https://cloud.${TAILNET_NAME}.ts.net
-      - CPAD_SANDBOX_DOMAIN=https://cloud.${TAILNET_NAME}.ts.net:8443
+      - CPAD_MAIN_DOMAIN=https://cloud.server.netbird.cloud
+      - CPAD_SANDBOX_DOMAIN=https://sandbox.server.netbird.cloud
       - CPAD_CONF=/cryptpad/config/config.js
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
     volumes:
       - /mnt/media/cryptpad/blob:/cryptpad/blob:Z
       - /mnt/media/cryptpad/block:/cryptpad/block:Z
@@ -17,10 +23,12 @@ services:
       - /srv/docker/data/cryptpad/customize:/cryptpad/customize:Z
       - /srv/docker/data/cryptpad/config:/cryptpad/config:ro,Z
       - ./sso:/cryptpad/lib/plugins/sso:ro,Z
+      # Mount Caddy's root CA at the correct path for cryptpad's base distro
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/cert.pem:ro,z
     labels:
       glance.name: CryptPad
       glance.icon: /assets/cryptpad.png
-      glance.url: https://cloud.${TAILNET_NAME}.ts.net
+      glance.url: https://cloud.server.netbird.cloud
       glance.description: Encrypted Office Suite
       glance.id: cryptpad
       glance.category: user-facing
@@ -30,52 +38,44 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
     ulimits:
       nofile:
         soft: 1000000
         hard: 1000000
-    init: true
 
-  tailscale:
-    image: tailscale/tailscale:latest
-    container_name: cryptpad-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-      - TS_USERSPACE=false
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: cryptpad-nb
     hostname: cloud
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
       - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - /srv/docker/data/cryptpad/serve/serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:3002:3000"
     deploy:
       resources:
         limits:
           memory: 128M
     labels:
-      glance.name: Tailscale
       glance.parent: cryptpad
+      glance.name: Netbird
 
 volumes:
-  tailscale_state:
+  netbird-state:

@@ -1,17 +1,14 @@
 services:
   postgresql:
-    image: dhi.io/postgres:18-alpine3.22
+    image: dhi.io/postgres:16-alpine3.23
     container_name: authentik_postgres
     env_file:
       - .env
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
     environment:
       - POSTGRES_DB=${PG_DB:-authentik}
       - POSTGRES_PASSWORD=${PG_PASS}
       - POSTGRES_USER=${PG_USER:-authentik}
+      - PGDATA=/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 30s
@@ -20,7 +17,9 @@ services:
       start_period: 20s
     restart: unless-stopped
     volumes:
-      - authentik_database:/var/lib/postgresql/data:z
+      - /srv/docker/data/authentik/_data:/var/lib/postgresql/data:z
+    networks:
+      - authentik_net
     labels:
       glance.parent: authentik
       glance.name: DB
@@ -28,94 +27,61 @@ services:
   server:
     command: server
     container_name: authentik_server
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.2}
+    ports:
+      - "127.0.0.1:9000:9000"
     env_file:
       - .env
     environment:
-      - AUTHENTIK_POSTGRESQL__HOST=127.0.0.1
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
-    network_mode: service:tailscale
     depends_on:
-      tailscale:
-        condition: service_started
       postgresql:
         condition: service_healthy
     restart: unless-stopped
     user: "1000"
     volumes:
-      - /srv/docker/data/authentik/custom-templates:/templates:Z
+      - /srv/docker/data/authentik/custom-templates:/templates:z
       - /srv/docker/data/authentik/data:/data:z
+    networks:
+      - authentik_net
     labels:
       glance.name: Authentik
       glance.icon: /assets/authentik.png
-      glance.url: https://auth.${TAILNET_NAME}.ts.net
+      glance.url: https://auth.server.netbird.cloud
       glance.description: Identity provider and SSO
       glance.id: authentik
 
   worker:
     command: worker
     container_name: authentik_worker
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1-rc1}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.2}
     env_file:
       - .env
-    network_mode: service:tailscale
-    depends_on:
-      tailscale:
-        condition: service_started
     environment:
-      - AUTHENTIK_POSTGRESQL__HOST=127.0.0.1
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
+    depends_on:
+      postgresql:
+        condition: service_healthy
     restart: unless-stopped
     shm_size: 512mb
     user: "root"
     volumes:
       - /srv/docker/data/authentik/certs:/certs:Z
-      - /srv/docker/data/authentik/custom-templates:/templates:Z
+      - /srv/docker/data/authentik/custom-templates:/templates:z
       - /srv/docker/data/authentik/data:/data:z
-      - /var/run/docker.sock:/var/run/docker.sock:Z
+      - /var/run/docker.sock:/var/run/docker.sock:z
+    networks:
+      - authentik_net
     labels:
       glance.parent: authentik
       glance.name: Worker
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: authentik-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: auth
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      - tailscale-state:/var/lib/tailscale:z
-      - /srv/docker/data/authentik/serve/serve.json:/config/serve.json:ro,Z
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.parent: authentik
-      glance.name: Tailscale
-
-volumes:
-  authentik_database:
-  tailscale-state:
+networks:
+  authentik_net:
+    driver: bridge

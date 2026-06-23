@@ -6,18 +6,14 @@ A self-hosted virtual browser that runs in Docker and uses WebRTC technology. Ac
 
 1. Copy `.env.example` to `.env`
 2. Edit `.env` with your values:
-   - `SERVER_TAILNET_IP`: Your host machine's Tailscale IP address
+   - `SERVER_NETBIRD_IP`: Your host machine's NetBird IP address (run `netbird status` on the server)
    - `ADMIN_PASSWORD`: Password for admin access
    - `USER_PASSWORD`: Password for regular user access
-   - `TS_AUTHKEY`: Your Tailscale auth key
-   - `TAILNET_NAME`: Your Tailscale network name
 3. Run `docker compose up -d`
 
 ## Access
 
-| Method | URL |
-|--------|-----|
-| Tailscale | https://neko.`${TAILNET_NAME}`.ts.net |
+- Web UI: https://neko.server.netbird.cloud
 
 ## Volume Paths
 
@@ -30,19 +26,15 @@ A self-hosted virtual browser that runs in Docker and uses WebRTC technology. Ac
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `SERVER_TAILNET_IP` | Host machine's Tailscale IP for WebRTC NAT traversal | Yes |
+| `SERVER_NETBIRD_IP` | Host machine's NetBird IP for WebRTC NAT traversal | Yes |
 | `ADMIN_PASSWORD` | Password for admin control | Yes |
 | `USER_PASSWORD` | Password for regular user access | Yes |
-| `TS_AUTHKEY` | Tailscale authentication key | Yes |
-| `TAILNET_NAME` | Your Tailscale tailnet name | Yes |
 | `NEKO_DESKTOP_SCREEN` | Display resolution and refresh rate | No (default: 1920x1080@60) |
 | `NEKO_WEBRTC_EPR` | WebRTC ephemeral port range | No (default: 56000-56100) |
 
-## Tailscale
+## WebRTC Ports
 
-- **Container name**: `neko-ts`
-- **Hostname**: `neko`
-- **WebRTC ports**: 56000-56100/UDP (exposed on host)
+WebRTC UDP ports (56000-56100) are published to all host interfaces for WebRTC connectivity.
 
 ## Browser Options
 

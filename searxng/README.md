@@ -6,16 +6,12 @@ Privacy-respecting metasearch engine that aggregates results from multiple searc
 
 1. Copy `.env.example` to `.env` and configure:
    - `SEARXNG_SECRET_KEY` - Generate with `openssl rand -hex 32`
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
 
-2. Create external network: `docker network create searxng_default`
-
-3. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Via Tailscale: https://search.<TAILNET_NAME>.ts.net
+- Via NetBird: https://search.server.netbird.cloud
 
 ## Service-Specific Configuration
 
@@ -51,20 +47,14 @@ Privacy-focused engines only:
 ### Data Storage
 
 - `searxng_data` - Cache and temporary data
-- `tailscale_state` - Tailscale state
-
-### Tailscale
-
-- Container: `searxng-ts`
-- Hostname: `search`
 
 ### Ports
 
-SearXNG runs internally on port 8080, accessible only via Tailscale HTTPS.
+SearXNG runs on port 8080, proxied through Caddy on the host.
 
 | Port | Service |
 |------|---------|
-| 8080 | HTTP (Tailscale-only) |
+| 8080 | HTTP / Caddy upstream |
 
 ### Healthchecks
 

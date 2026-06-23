@@ -9,8 +9,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 1. Copy `.env.example` to `.env` and configure:
    - Database credentials
    - Admin user account
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
 
 2. Create directories:
    - `pgdata` - PostgreSQL data
@@ -46,8 +44,8 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Access
 
-- Web UI: http://localhost:8040
-- Via Tailscale: https://podcasts.<TAILNET_NAME>.ts.net
+- Web UI: https://podcasts.server.netbird.cloud
+- Local: http://localhost:8040
 
 ## Service-Specific Configuration
 
@@ -70,11 +68,6 @@ Hardcoded to my server setup:
 ### Dependencies
 
 The pinepods service depends on the database being healthy. Database health is checked via `pg_isready`.
-
-### Tailscale
-
-- Container: `pinepods-ts`
-- Hostname: `podcasts`
 
 ### Ports
 

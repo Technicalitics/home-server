@@ -2,54 +2,64 @@ services:
   immich-server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    network_mode: service:tailscale
+    extends:
+      file: hwaccel.transcoding.yml
+      service: quicksync
+    network_mode: service:netbird
     depends_on:
+      netbird:
+        condition: service_started
       redis:
         condition: service_started
       database:
         condition: service_started
-      tailscale:
-        condition: service_started
+    init: true
     volumes:
       - ${UPLOAD_LOCATION}:/data:z
       - /etc/localtime:/etc/localtime:ro,z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/cert.pem:ro,z
     env_file:
       - .env
-    restart: always
+    environment:
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
+    restart: unless-stopped
     labels:
       glance.name: Immich
       glance.icon: /assets/immich.png
-      glance.url: https://images.${TAILNET_NAME}.ts.net
+      glance.url: https://images.server.netbird.cloud
       glance.description: Image & video management
       glance.id: immich
       glance.category: user-facing
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    network_mode: service:tailscale
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino
+    extends:
+      file: hwaccel.ml.yml
+      service: openvino
+    network_mode: service:netbird
     depends_on:
-      tailscale:
+      netbird:
         condition: service_started
     volumes:
-      - model-cache:/cache
+      - model-cache:/cache:z
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
     labels:
       glance.parent: immich
       glance.name: Machine Learning
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:2bce660b767cb62c8c0ea020e94a230093be63dbd6af4f21b044960517a5842d
-    network_mode: service:tailscale
+    image: dhi.io/valkey:9
+    network_mode: service:netbird
+    depends_on:
+      netbird:
+        condition: service_started
     env_file:
       - .env
-    restart: always
-    depends_on:
-      tailscale:
-        condition: service_started
+    restart: unless-stopped
     labels:
       glance.parent: immich
       glance.name: Redis
@@ -57,7 +67,10 @@ services:
   database:
     container_name: immich_postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
-    network_mode: service:tailscale
+    network_mode: service:netbird
+    depends_on:
+      netbird:
+        condition: service_started
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
@@ -66,46 +79,46 @@ services:
     volumes:
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data:z
     shm_size: 128mb
-    restart: always
+    restart: unless-stopped
     labels:
       glance.parent: immich
       glance.name: DB
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: immich-ts
-    restart: always
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: immich-nb
     hostname: images
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - immich_tailscale-state:/var/lib/tailscale:z
-      - /srv/docker/data/immich/serve/serve.json:/config/serve.json:ro,Z
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:2283:2283"
+      - "127.0.0.1:3003:3003"
     deploy:
       resources:
         limits:
           memory: 128M
     labels:
       glance.parent: immich
-      glance.name: Tailscale
+      glance.name: NetBird
 
 volumes:
   model-cache:
-  immich_tailscale-state:
+  netbird-state:

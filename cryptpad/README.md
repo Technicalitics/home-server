@@ -14,8 +14,7 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
    # SSD - configuration (fast, small)
    sudo mkdir -p /srv/docker/data/cryptpad/customize \
-                 /srv/docker/data/cryptpad/config \
-                 /srv/docker/data/cryptpad/serve
+                 /srv/docker/data/cryptpad/config
    sudo chown -R 4001:4001 /srv/docker/data/cryptpad
    ```
 
@@ -23,7 +22,16 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
    ```bash
    cp config/config.js /srv/docker/data/cryptpad/config/config.js
    ```
-   Then edit `/srv/docker/data/cryptpad/config/config.js` and replace `YOUR-TAILNET` with your actual tailnet name.
+   Then edit `/srv/docker/data/cryptpad/config/config.js` and set:
+   ```javascript
+   module.exports = {
+       httpUnsafeOrigin: 'https://cloud.server.netbird.cloud',
+       httpSafeOrigin: 'https://sandbox.server.netbird.cloud',
+       httpAddress: '0.0.0.0',
+       adminKeys: [],
+       installMethod: 'docker',
+   };
+   ```
 
 3. Set up `application_config.js` (required — sets login salt for password hashing):
    ```bash
@@ -37,9 +45,7 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
    ```
    Generate a salt with: `openssl rand -hex 32`
 
-4. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
+4. Copy `.env.example` to `.env`.
 
 5. Restart: `docker compose up -d`
 
@@ -54,8 +60,8 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Access
 
-- Via Tailscale: https://cloud.\<TAILNET_NAME\>.ts.net
-- Sandbox origin: https://cloud.\<TAILNET_NAME\>.ts.net:8443
+- Web UI: https://cloud.server.netbird.cloud
+- Sandbox origin: https://sandbox.server.netbird.cloud
 
 ## Service-Specific Configuration
 
@@ -65,8 +71,8 @@ The mounted `config.js` overrides specific values from the built-in example conf
 
 ```javascript
 module.exports = {
-    httpUnsafeOrigin: 'https://cloud.YOUR-TAILNET.ts.net',
-    httpSafeOrigin: 'https://cloud.YOUR-TAILNET.ts.net:8443',
+    httpUnsafeOrigin: 'https://cloud.server.netbird.cloud',
+    httpSafeOrigin: 'https://sandbox.server.netbird.cloud',
     httpAddress: '0.0.0.0',
     adminKeys: [],
     installMethod: 'docker',
@@ -102,13 +108,13 @@ The `application_config.js` file must use the factory wrapper format (copied fro
 
 ### Sandbox Domain
 
-This instance uses a port-based sandbox:
-- Main: port 443 (`httpUnsafeOrigin`)
-- Sandbox: port 8443 (`httpSafeOrigin`)
+This instance uses a hostname-based sandbox:
+- Main: `cloud.server.netbird.cloud` (`httpUnsafeOrigin`)
+- Sandbox: `sandbox.server.netbird.cloud` (`httpSafeOrigin`)
 
-The browser treats these as different origins due to different ports, isolating the editor UI from cryptographic operations. This prevents XSS vulnerabilities in the editor (e.g., a malicious .docx) from accessing your encryption keys.
+The browser treats these as different origins, isolating the editor UI from cryptographic operations. This prevents XSS vulnerabilities in the editor (e.g., a malicious .docx) from accessing your encryption keys.
 
-Both ports are served by Tailscale's TLS proxy to the same CryptPad instance on its internal port 3000.
+Both hostnames are proxied by Caddy to the same CryptPad instance on its internal port 3000.
 
 ### Storage & Donate Button
 
@@ -168,21 +174,9 @@ Hardcoded to my server setup:
 - `/mnt/media/cryptpad/files` - File datastore (HDD)
 - `/srv/docker/data/cryptpad/customize` - Instance customization (SSD)
 - `/srv/docker/data/cryptpad/config` - Config files (SSD)
-- `/srv/docker/data/cryptpad/serve` - Tailscale serve config (SSD)
 
 **To make portable:** Change to relative paths in docker-compose.yml.
 
-### Network
-
-This service uses `network_mode: service:tailscale` - CryptPad shares Tailscale's network namespace and is only accessible via Tailscale, not directly via host ports.
-
-### Tailscale
-
-- Container: `cryptpad-ts`
-- Hostname: `cloud`
-- Image: `tailscale/tailscale:latest` (official)
-- Serves on ports 443 (main) and 8443 (sandbox)
-
 ## Diagnostics
 
-Visit `https://cloud.\<TAILNET_NAME\>.ts.net/checkup/` after setup to verify everything is configured correctly.
+Visit `https://cloud.server.netbird.cloud/checkup/` after setup to verify everything is configured correctly.

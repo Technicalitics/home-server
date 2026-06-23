@@ -11,36 +11,19 @@ Common instructions for all services in this repository.
 
 2. Edit `.env` with your configuration (see service README for required variables).
 
-3. Create the external network (if required):
-   ```bash
-   docker network create <service>_default
-   ```
-
-4. Start the service:
+3. Start the service:
    ```bash
    docker compose up -d
    ```
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and configure:
-- `TS_AUTHKEY` - Your Tailscale auth key (optional)
-- `TAILNET_NAME` - Your Tailscale network name (optional)
-- Service-specific variables (see each service's README)
+Copy `.env.example` to `.env` and configure service-specific variables (see each service's README).
 
 Generate secure passwords with:
 ```bash
 openssl rand -base64 30
 ```
-
-## Tailscale Integration
-
-Most services include a Tailscale container for VPN access:
-- Container: `<service>-ts`
-- Automatically connects on startup
-- Hostname follows pattern (see service README)
-
-**To disable:** Remove the `tailscale` service from `docker-compose.yml`.
 
 ## Volume Paths
 
@@ -53,12 +36,6 @@ Services use hardcoded paths for my server setup:
 volumes:
   - ./data:/data:z
 ```
-
-## External Networks
-
-Some services use an external network (`<service>_default`) for inter-service communication.
-
-**To use default bridge network:** Remove the `networks` section from docker-compose.yml.
 
 ## SELinux
 

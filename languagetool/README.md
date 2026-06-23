@@ -6,25 +6,18 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
-
-2. Create directories:
+1. Create directories:
    - `fasttext` - FastText models
    - `ngrams` - N-gram data for better suggestions
 
-3. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Via Tailscale: https://languagetool.<TAILNET_NAME>.ts.net/v2
+- Web UI: https://grammar.server.netbird.cloud/v2
+- Local: http://localhost:8086/v2
 
 ## Service-Specific Configuration
-
-### Network
-
-This service uses `network_mode: service:tailscale` - LanguageTool shares Tailscale's network namespace and is only accessible via Tailscale, not directly via host ports.
 
 ### Volumes
 
@@ -46,21 +39,10 @@ Key configuration:
 
 Test the API:
 ```bash
-curl -d "language=en-US&text=a simple test" https://languagetool.<TAILNET_NAME>.ts.net/v2/check
+curl -d "language=en-US&text=a simple test" https://grammar.server.netbird.cloud/v2/check
 ```
 
 ### Browser Integration
 
 Configure LanguageTool browser extension to use your self-hosted instance:
-- Set API server to: `https://languagetool.<TAILNET_NAME>.ts.net/v2`
-
-### Tailscale
-
-- Container: `languagetool-ts`
-- Hostname: `languagetool`
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| None | Accessible via Tailscale only |
+- Set API server to: `https://grammar.server.netbird.cloud/v2`

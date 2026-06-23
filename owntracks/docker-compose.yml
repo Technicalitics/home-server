@@ -2,10 +2,12 @@ services:
   mqtt:
     image: eclipse-mosquitto:2
     container_name: mqtt
-    network_mode: service:tailscale
+    network_mode: service:netbird
     depends_on:
-      tailscale:
+      netbird:
         condition: service_started
+    restart: unless-stopped
+    init: true
     volumes:
       - /srv/docker/data/owntracks/mosquitto/config:/mosquitto/config:Z
       - /srv/docker/data/owntracks/mosquitto/data:/mosquitto/data:Z
@@ -17,17 +19,19 @@ services:
   frontend:
     image: owntracks/frontend
     container_name: owntracks-frontend
-    network_mode: service:tailscale
+    network_mode: service:netbird
     depends_on:
-      tailscale:
+      netbird:
         condition: service_started
+    restart: unless-stopped
+    init: true
     environment:
       - SERVER_HOST=127.0.0.1
       - SERVER_PORT=8083
     labels:
       glance.name: OwnTracks
       glance.icon: /assets/owntracks.png
-      glance.url: https://tracks.${TAILNET_NAME}.ts.net
+      glance.url: https://tracks.server.netbird.cloud
       glance.description: Location Sharing
       glance.id: owntracks
       glance.category: user-facing
@@ -35,12 +39,14 @@ services:
   recorder:
     image: owntracks/recorder:latest
     container_name: owntracks-recorder
-    network_mode: service:tailscale
+    network_mode: service:netbird
     depends_on:
-      tailscale:
+      netbird:
         condition: service_started
       mqtt:
         condition: service_started
+    restart: unless-stopped
+    init: true
     env_file:
       - .env
     environment:
@@ -55,40 +61,40 @@ services:
       glance.name: Recorder
       glance.parent: owntracks
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: owntracks-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
+  netbird:
+    image: netbirdio/netbird:latest
+    container_name: owntracks-nb
     hostname: tracks
+    restart: unless-stopped
     cap_add:
       - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - NET_RAW
     cap_drop:
       - ALL
+    devices:
+      - /dev/net/tun:/dev/net/tun
     security_opt:
       - no-new-privileges:true
     tmpfs:
       - /tmp
       - /var/run
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=true
     volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:8085:80"
+      - "127.0.0.1:1883:1883"
     deploy:
       resources:
         limits:
           memory: 128M
     labels:
-      glance.name: Tailscale
       glance.parent: owntracks
+      glance.name: NetBird
 
 volumes:
-  tailscale_state:
+  netbird-state:

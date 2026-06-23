@@ -3,7 +3,8 @@ services:
     image: umlatt/vdo.ninja:latest
     container_name: vdo.ninja
     restart: unless-stopped
-    network_mode: service:tailscale
+    ports:
+      - "127.0.0.1:8084:80"
     env_file:
       - .env
     command:
@@ -15,7 +16,7 @@ services:
     labels:
       glance.name: VDO.Ninja
       glance.icon: /assets/vdoninja.png
-      glance.url: https://vdo.${TAILNET_NAME}.ts.net
+      glance.url: https://vdo.server.netbird.cloud
       glance.description: Peer-to-peer video streaming
       glance.id: vdoninja
       glance.category: user-facing
@@ -25,48 +26,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    depends_on:
-      tailscale:
-        condition: service_started
     working_dir: /var/www/html
     stdin_open: true
     tty: true
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: vdoninja-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: vdo
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.name: Tailscale
-      glance.parent: vdoninja
-
 volumes:
   vdoninja_data:
-  tailscale_state:

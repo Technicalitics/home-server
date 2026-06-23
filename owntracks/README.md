@@ -9,22 +9,17 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 1. Copy `.env.example` to `.env` and configure:
    - `OTR_USER` - Username for recorder
    - `OTR_PASS` - Password for recorder
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
 
 2. Create required directories:
    - `mosquitto/config`, `mosquitto/data`, `mosquitto/log`
    - `recorder/config`, `recorder/store`
 
-3. Create external network: `docker network create owntracks_default`
-
-4. Start: `docker compose up -d`
+3. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:80 (frontend)
-- API: http://localhost:8083 (recorder)
-- Via Tailscale: https://tracks.<TAILNET_NAME>.ts.net
+- Web UI: https://tracks.server.netbird.cloud
+- Local: http://localhost:8085
 
 ## Service-Specific Configuration
 
@@ -53,24 +48,19 @@ Key environment variables:
 - `OTR_TOPIC` - MQTT topic to subscribe to (default: owntracks/#)
 - `OTR_STORAGEDIR` - Where to store data (default: /store)
 
-### Tailscale
-
-- Container: `owntracks-ts`
-- Hostname: `tracks`
-
 ### Ports
 
 | Port | Service |
 |------|---------|
-| 80 | Frontend HTTP |
-| 1883 | MQTT |
-| 8083 | Recorder HTTP |
+| 8085 | Frontend HTTP (proxied by Caddy) |
+| 1883 | MQTT (internal) |
+| 8083 | Recorder HTTP (internal) |
 
 ### SmartPhone Configuration
 
 Configure the OwnTracks app on your phone:
 - Mode: MQTT
-- Host: Your Tailscale hostname
+- Host: Your NetBird hostname
 - Port: 8883 (with TLS) or 1883 (without TLS)
 - Username: `OTR_USER` from .env
 - Password: `OTR_PASS` from .env

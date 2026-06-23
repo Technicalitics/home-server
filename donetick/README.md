@@ -6,17 +6,14 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure:
-   - `TS_AUTHKEY` - Your Tailscale auth key
-   - `TAILNET_NAME` - Your Tailscale network name
+1. Copy `.env.example` to `.env` and configure.
 
-2. Create external network: `docker network create donetick_default`
-
-3. Start: `docker compose up -d`
+2. Start: `docker compose up -d`
 
 ## Access
 
-- Web UI: http://localhost:2021
+- Web UI: https://tasks.server.netbird.cloud
+- Local: http://localhost:2021
 
 ## Service-Specific Configuration
 
@@ -40,14 +37,3 @@ See [Donetick documentation](https://donetick.app) for all configuration options
 
 - `/srv/docker/data/donetick/data` - SQLite database
 - `/srv/docker/data/donetick/config` - Configuration files
-
-### Tailscale
-
-- Container: `donetick-ts`
-- Hostname: `tasks`
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 2021 | HTTP |

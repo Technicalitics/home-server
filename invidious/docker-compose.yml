@@ -21,7 +21,7 @@ services:
           - private_url: "http://host.docker.internal:8282/companion"
         port: 3000
         external_port: 443
-        domain: youtube.${TAILNET_NAME}.ts.net
+        domain: youtube.server.netbird.cloud
         https_only: true
         statistics_enabled: true
         use_innertube_for_captions: true
@@ -44,7 +44,7 @@ services:
     labels:
       glance.name: Invidious
       glance.icon: /assets/invidious.png
-      glance.url: https://youtube.${TAILNET_NAME}.ts.net
+      glance.url: https://youtube.server.netbird.cloud
       glance.description: Private YouTube frontend
       glance.id: invidious
       glance.category: user-facing
@@ -102,41 +102,6 @@ services:
       glance.parent: invidious
       glance.name: Companion
 
-  tailscale:
-    image: dhi.io/tailscale:1
-    container_name: invidious-ts
-    restart: unless-stopped
-    command:
-      - /usr/local/bin/containerboot
-    env_file:
-      - .env
-    environment:
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_ACCEPT_DNS=true
-      - TS_SERVE_CONFIG=/config/serve.json
-    hostname: youtube
-    cap_add:
-      - NET_ADMIN
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run
-    volumes:
-      - tailscale_state:/var/lib/tailscale:z
-      - ./serve.json:/config/serve.json:ro,Z
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    labels:
-      glance.parent: invidious
-      glance.name: Tailscale
-
 networks:
   default:
     name: invidious_default
@@ -144,4 +109,3 @@ networks:
 volumes:
   postgresdata:
   companioncache:
-  tailscale_state:
