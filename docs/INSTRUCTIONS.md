@@ -31,7 +31,7 @@ Services use hardcoded paths for my server setup:
 - `/srv/docker/data/<service>` - Application data
 - `/mnt/media/*` - Media libraries (read-only)
 
-**To make portable:** Change to relative paths in docker-compose.yml:
+**To make these portable:** Change to relative paths in docker-compose.yml:
 ```yaml
 volumes:
   - ./data:/data:z

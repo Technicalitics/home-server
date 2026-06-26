@@ -19,23 +19,6 @@ The `update_all.sh` script:
 - Tracks and reports failed updates in a temp file
 - Accepts an optional base directory argument (defaults to `/srv/docker/compose`)
 
-## Pros and Cons
-
-### Pros
-
-- Faster updates through parallel execution
-- Single command updates all services
-- Clear failure reporting
-- Configurable base directory
-- Timeout protection (300s per service)
-
-### Cons
-
-- Parallel execution can cause interleaved output
-- Resource contention (network/disk) with multiple simultaneous pulls
-- Harder to debug individual service failures
-- xargs complexity vs simple loop
-
 ## Usage
 
 ```bash
@@ -48,7 +31,7 @@ The `update_all.sh` script:
 
 ## Customization
 
-End users can modify `update_all.sh`:
+Some ways you could modify `update_all.sh`:
 
 ### Base Directory
 
