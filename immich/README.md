@@ -16,7 +16,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 ## Access
 
 - Web UI: https://images.server.netbird.cloud
-- Local: http://localhost:2283
 
 ## Service-Specific Configuration
 
@@ -31,9 +30,3 @@ Configured via `.env`:
 UPLOAD_LOCATION=./photos
 DB_DATA_LOCATION=./postgres
 ```
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 2283 | HTTP |

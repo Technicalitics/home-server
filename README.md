@@ -22,18 +22,18 @@ Hosting, using, and sharing services on my server allow me to build operational 
 
 | Service | Description |
 |---------|-------------|
-| [authentik](authentik/README.md) | Identity provider & SSO |
-| [immich](immich/README.md) | Photo & video management |
-| [jellyfin](jellyfin/README.md) | Media server |
-| [donetick](donetick/README.md) | Todo list with badges |
-| [invidious](invidious/README.md) | YouTube front-end |
-| [glance](glance/README.md) | Dashboard with feeds |
-| [owntracks](owntracks/README.md) | Location tracking |
-| [actual_budget](actual_budget/README.md) | Budget tracking |
-| [ntfy](ntfy/README.md) | Push notifications |
-| [media_stack](media_stack/README.md) | Media download & management |
-| [searxng](searxng/README.md) | Private metasearch |
-| [neko](neko/README.md) | Virtual browser |
+| [authentik](authentik/) | Identity provider & SSO |
+| [immich](immich/) | Photo & video management |
+| [jellyfin](jellyfin/) | Media server |
+| [donetick](donetick/) | Todo list with badges |
+| [invidious](invidious/) | YouTube front-end |
+| [glance](glance/) | Dashboard with feeds |
+| [owntracks](owntracks/) | Location tracking |
+| [actual_budget](actual_budget/) | Budget tracking |
+| [ntfy](ntfy/) | Push notifications |
+| [media_stack](media_stack/) | Media download & management |
+| [searxng](searxng/) | Private metasearch |
+| [neko](neko/) | Virtual browser |
 
 ## Structure
 
@@ -47,7 +47,7 @@ Each service directory contains `docker-compose.yml`, `.env.example`, and `READM
    - Edit `.env` with your values
    - Run `docker compose up -d`
 
-See [docs/INSTRUCTIONS.md](docs/INSTRUCTIONS.md) for common setup details and [individual service READMEs](*/README.md) for service-specific configuration.
+See [docs/INSTRUCTIONS.md](docs/INSTRUCTIONS.md) for common setup details and individual service READMEs for service-specific configuration.
 
 ## Bulk Updates
 

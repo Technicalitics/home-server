@@ -18,8 +18,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 ## Access
 
 - Web UI: https://crafty.server.netbird.cloud
-- Local: http://localhost:8443
-- First run: Create admin account via the web UI
 
 ## Service-Specific Configuration
 

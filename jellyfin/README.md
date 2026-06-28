@@ -1,19 +1,18 @@
 # Jellyfin
 
-Free and open-source media server for streaming movies, TV shows, music, and photos.
+Free and open-source media server for streaming movies, TV shows, music, photos.
 
 For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.md).
 
 ## Quick Start
 
-1. Copy `.env.example` to `.env` and configure `TZ`.
+1. Copy `.env.example` to `.env` and optionally configure `TZ`.
 
 2. Start: `docker compose up -d`
 
 ## Access
 
 - Web UI: https://media.server.netbird.cloud
-- Local: http://localhost:8096
 
 ## Service-Specific Configuration
 
@@ -29,4 +28,4 @@ Hardcoded to my server setup:
 
 ### Hardware Acceleration
 
-Container has access to `/dev/dri/renderD128` for GPU-accelerated transcoding. Remove `devices` section if not needed.
+Container has access to `/dev/dri/renderD128` for GPU-accelerated transcoding. If you'd like to do the same, ensure you have a gpu capable of transcoding, and ensure the device exists at the proper path. See [Jellyfin Hardware Acceleration Docs](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/) for more information. Remove `devices` section if not needed.

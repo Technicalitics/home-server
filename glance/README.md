@@ -14,7 +14,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 ## Access
 
 - Web UI: https://home.server.netbird.cloud
-- Local: http://localhost:8082
 
 ## Service-Specific Configuration
 
@@ -25,6 +24,9 @@ Glance requires a `glance.yml` config file in the config directory. Download the
 wget -O config/glance.yml https://raw.githubusercontent.com/glanceapp/glance/refs/heads/main/docs/glance.yml
 ```
 
+
+See [official documentation](https://glance.github.io/) for widget configuration.
+
 ### Volumes
 
 Hardcoded to my server setup:
@@ -33,17 +35,3 @@ Hardcoded to my server setup:
 - `/mnt/media` - Media files (read-only)
 
 **To make portable:** Change to relative paths in docker-compose.yml.
-
-### Widgets
-
-Glance supports various widgets including:
-- RSS feeds
-- YouTube/Twitch videos
-- Hacker News
-- Reddit
-- Weather
-- Calendar
-- Server stats (requires docker.sock)
-- And more...
-
-See [official documentation](https://glance.github.io/) for widget configuration.

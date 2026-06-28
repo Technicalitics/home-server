@@ -13,7 +13,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 ## Access
 
 - Web UI: https://tasks.server.netbird.cloud
-- Local: http://localhost:2021
 
 ## Service-Specific Configuration
 
@@ -33,7 +32,7 @@ You can override config keys using `DT_` prefix. For example:
 
 See [Donetick documentation](https://donetick.app) for all configuration options.
 
-### Data Storage
+### Volume Paths
 
 - `/srv/docker/data/donetick/data` - SQLite database
 - `/srv/docker/data/donetick/config` - Configuration files

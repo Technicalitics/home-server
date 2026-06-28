@@ -6,13 +6,11 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 ## Quick Start
 
-1. Create data directories on HDD and SSD:
+1. Create data directories:
    ```bash
-   # HDD - documents and files (on ZFS, backed up)
    sudo mkdir -p /mnt/media/cryptpad/{blob,block,data,files}
    sudo chown -R 4001:4001 /mnt/media/cryptpad
 
-   # SSD - configuration (fast, small)
    sudo mkdir -p /srv/docker/data/cryptpad/customize \
                  /srv/docker/data/cryptpad/config
    sudo chown -R 4001:4001 /srv/docker/data/cryptpad

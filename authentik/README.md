@@ -15,7 +15,6 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 ## Access
 
 - Web UI: https://auth.server.netbird.cloud
-- Local: http://localhost:9000
 
 ## Service-Specific Configuration
 
@@ -34,10 +33,3 @@ Key configuration:
 - `AUTHENTIK_SECRET_KEY` - Required secret key (generate with `openssl rand -base64 60`)
 - `PG_PASS` - PostgreSQL password
 - `AUTHENTIK_POSTGRESQL__HOST=postgresql` - (auto-set in compose, no need to configure)
-
-### Ports
-
-| Port | Service |
-|------|---------|
-| 9000 | HTTP (proxied by Caddy) |
-| 9443 | HTTPS (internal) |
