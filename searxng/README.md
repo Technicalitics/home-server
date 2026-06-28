@@ -2,6 +2,8 @@
 
 Privacy-respecting metasearch engine that aggregates results from multiple search engines while removing trackers.
 
+I opted to use the [oaklight/searxng image](https://hub.docker.com/r/oaklight/searxng) to make use of the [BM25 Reranking Plugin](https://docs.searxng.org/admin/settings/settings_plugins.html#external-plugins), which should provide higher quality results.
+
 ## Quick Start
 
 1. Copy `.env.example` to `.env` and configure:
@@ -17,7 +19,7 @@ Privacy-respecting metasearch engine that aggregates results from multiple searc
 
 ### Required Files
 
-The `config/settings.yml` file is mounted from the host at `/srv/docker/data/searxng/config/settings.yml`. This allows portable configuration while maintaining your custom settings across deployments.
+The `config/settings.yml` file is mounted from the host at `/srv/docker/data/searxng/config/settings.yml`. You can change this, and mount the settings.yml file from wherever you want to store it on your machine.
 
 To create the initial settings file:
 ```bash
@@ -27,22 +29,7 @@ cp config/settings.yml /srv/docker/data/searxng/config/settings.yml
 
 ### Configuration
 
-Key settings in `settings.yml`:
-
-- **Engines**: Configured to use only privacy-respecting search engines (no Google, Bing, etc.)
-- **Theme**: Dark mode by default
-- **Safe Search**: Moderate (configurable in search preferences)
-- **Base URL**: Set via `SEARXNG_BASE_URL` environment variable
-
-### Enabled Search Engines
-
-Privacy-focused engines only:
-- Brave Search, Mojeek (independent indexes)
-- DuckDuckGo, Qwant, Ecosia, MetaGer (privacy-respecting)
-- Wikipedia, Wikidata, GitHub, Arch Wiki (reference/developer)
-- Marginalia, Wiby (privacy-focused indexers)
-- Searx, YaCy (decentralized/self-hosted)
-- Invidious (YouTube via your self-hosted instance)
+See all configuration options at the [official docs](https://docs.searxng.org/admin/settings/index.html). I've provided my configuration which (from my limited testing), seem to provide the best results.
 
 ### Data Storage
 
@@ -55,7 +42,3 @@ SearXNG runs on port 8080, proxied through Caddy on the host.
 | Port | Service |
 |------|---------|
 | 8080 | HTTP / Caddy upstream |
-
-### Healthchecks
-
-- HTTP health endpoint check at `/healthz`

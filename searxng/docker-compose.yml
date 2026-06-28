@@ -1,6 +1,6 @@
 services:
   searxng:
-    image: searxng/searxng:latest
+    image: oaklight/searxng:latest
     container_name: searxng
     restart: unless-stopped
     ports:

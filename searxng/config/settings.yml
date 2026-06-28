@@ -1,18 +1,16 @@
-use_default_settings:
-  engines:
-    remove:
-      - google
+use_default_settings: true
 
 server:
   limiter: false
   image_proxy: true
   bind_address: "0.0.0.0"
   port: 8080
-  base_url: https://search.CHANGEME.ts.net
+  base_url: https://search.server.netbird.cloud
   secret_key: "CHANGEME"
 
 search:
   safe_search: 1
+  formats: [json, html]
 
 ui:
   default_theme: simple
@@ -25,4 +23,8 @@ plugins:
   searx.plugins.unit_converter.SXNGPlugin:
     active: true
   searx.plugins.tracker_url_remover.SXNGPlugin:
+    active: true
+  searxng_bm25_reranker.SXNGPlugin:
+    active: true
+  searx.plugins.oa_doi_rewrite.SXNGPlugin:
     active: true

@@ -45,7 +45,6 @@ Each service directory contains `docker-compose.yml`, `.env.example`, and `READM
 2. For each service:
    - Copy `.env.example` to `.env`
    - Edit `.env` with your values
-   - Adjust volume paths to your setup
    - Run `docker compose up -d`
 
 See [docs/INSTRUCTIONS.md](docs/INSTRUCTIONS.md) for common setup details and [individual service READMEs](*/README.md) for service-specific configuration.
