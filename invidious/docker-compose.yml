@@ -7,30 +7,13 @@ services:
       - "127.0.0.1:3000:3000"
     env_file:
       - .env
-    environment:
-      INVIDIOUS_CONFIG: |
-        db:
-          dbname: ${POSTGRES_DB}
-          user: ${POSTGRES_USER}
-          password: ${POSTGRES_PASSWORD}
-          host: invidious-db
-          port: 5432
-        check_tables: true
-        invidious_companion_key: ${INVIDIOUS_COMPANION_KEY}
-        invidious_companion:
-          - private_url: "http://host.docker.internal:8282/companion"
-        port: 3000
-        external_port: 443
-        domain: youtube.server.netbird.cloud
-        https_only: true
-        statistics_enabled: true
-        use_innertube_for_captions: true
-        hmac_key: ${HMAC_KEY}
     entrypoint:
       - "/sbin/tini"
       - "--"
     command:
       - "/invidious/invidious"
+    volumes:
+      - /srv/docker/data/invidious/config:/config:z
     healthcheck:
       test: wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/trending || exit 1
       interval: 30s
@@ -60,7 +43,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - /srv/docker/data/invidious/config/sql:/config/sql:Z
+      - /srv/docker/data/invidious/config/sql:/config/sql:z
       - /srv/docker/data/invidious/init-invidious-db.sh:/docker-entrypoint-initdb.d/init-invidious-db.sh:Z
       - postgresdata:/var/lib/postgresql/data:z
     expose:

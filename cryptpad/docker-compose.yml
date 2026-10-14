@@ -44,19 +44,14 @@ services:
         hard: 1000000
 
   netbird:
-    image: netbirdio/netbird:latest
+    image: netbirdio/netbird:rootless-latest
     container_name: cryptpad-nb
     hostname: cloud
     restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_ADMIN
-      - SYS_RESOURCE
-      - NET_RAW
+    cap_add: []
     cap_drop:
       - ALL
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    devices: []
     security_opt:
       - no-new-privileges:true
     tmpfs:
@@ -73,6 +68,7 @@ services:
       resources:
         limits:
           memory: 128M
+    user: "1000:1000"
     labels:
       glance.parent: cryptpad
       glance.name: Netbird

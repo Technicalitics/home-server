@@ -83,6 +83,7 @@ services:
     environment:
       - NB_SETUP_KEY=${NB_SETUP_KEY}
       - NB_ENABLE_ROSENPASS=true
+      - NB_ROSENPASS_PERMISSIVE=true
     volumes:
       - netbird-state:/var/lib/netbird:z
     ports:

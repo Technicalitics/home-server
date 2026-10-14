@@ -1,4 +1,3 @@
 # ignore secrets files
 .env
-**/env
-**/.env.bak
+.env.bak

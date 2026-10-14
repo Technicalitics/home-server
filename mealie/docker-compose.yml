@@ -1,0 +1,65 @@
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v3.28.0
+    container_name: mealie
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    volumes:
+      - /srv/docker/data/mealie:/app/data/:Z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/certs/ca-certificates.crt:ro,z
+    env_file:
+      - .env
+    network_mode: service:netbird
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+    read_only: true
+    tmpfs:
+      - /tmp
+    labels:
+      glance.name: Mealie
+      glance.icon: /assets/mealie.png
+      glance.url: https://cook.server.netbird.cloud
+      glance.description: Recipe Manager
+      glance.id: mealie
+      glance.category: user-facing
+
+  netbird:
+    image: netbirdio/netbird:rootless-latest
+    container_name: mealie-nb
+    hostname: cook
+    restart: unless-stopped
+    cap_add: []
+    cap_drop:
+      - ALL
+    devices: []
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run
+    environment:
+      - NB_SETUP_KEY=${NB_SETUP_KEY}
+      - NB_ENABLE_ROSENPASS=false
+    volumes:
+      - netbird-state:/var/lib/netbird:z
+    ports:
+      - "127.0.0.1:8070:9000"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    labels:
+      glance.parent: mealie
+      glance.name: NetBird
+    user: "1000:1000"
+
+volumes:
+  netbird-state:

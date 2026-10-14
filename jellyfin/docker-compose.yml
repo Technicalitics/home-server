@@ -30,19 +30,14 @@ services:
       glance.category: user-facing
 
   netbird:
-    image: netbirdio/netbird:latest
+    image: netbirdio/netbird:rootless-latest
     container_name: jellyfin-nb
     hostname: media
     restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_ADMIN
-      - SYS_RESOURCE
-      - NET_RAW
+    cap_add: []
     cap_drop:
       - ALL
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    devices: []
     security_opt:
       - no-new-privileges:true
     tmpfs:

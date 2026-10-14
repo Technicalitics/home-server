@@ -13,9 +13,12 @@ services:
     volumes:
       - /srv/docker/data/donetick/data:/donetick-data:z
       - /srv/docker/data/donetick/config:/config:z
+      - /etc/pki/tls/certs/ca-bundle.crt:/etc/ssl/cert.pem:ro,z
+
     environment:
       - DT_ENV=selfhosted
       - DT_SQLITE_PATH=/donetick-data/donetick.db
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
     healthcheck:
       test: ["CMD-SHELL", "wget -q --tries=1 --spider http://127.0.0.1:2021 || exit 1"]
       interval: 30s
@@ -31,19 +34,14 @@ services:
       glance.category: user-facing
 
   netbird:
-    image: netbirdio/netbird:latest
+    image: netbirdio/netbird:rootless-latest
     container_name: donetick-nb
     hostname: tasks
     restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_ADMIN
-      - SYS_RESOURCE
-      - NET_RAW
+    cap_add: []
     cap_drop:
       - ALL
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    devices: []
     security_opt:
       - no-new-privileges:true
     tmpfs:

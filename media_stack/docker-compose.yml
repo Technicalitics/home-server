@@ -207,19 +207,14 @@ services:
       glance.id: maintainerr
 
   netbird:
-    image: netbirdio/netbird:latest
+    image: netbirdio/netbird:rootless-latest
     container_name: media-seerr-nb
     hostname: requests
     restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-      - SYS_ADMIN
-      - SYS_RESOURCE
-      - NET_RAW
+    cap_add: []
     cap_drop:
       - ALL
-    devices:
-      - /dev/net/tun:/dev/net/tun
+    devices: []
     security_opt:
       - no-new-privileges:true
     tmpfs:

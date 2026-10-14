@@ -1,0 +1,20 @@
+services:
+  vdoninja:
+    build: .
+    image: vdoninja-offline:local
+    # Match the Linux account that owns the private key; never chmod it 644.
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    ports:
+      - "127.0.0.1:${HTTPS_PORT:-8443}:8443"
+    volumes:
+      - /etc/caddy/certs/vdo-ninja/server.crt:/certs/server.crt:ro,z
+      - /etc/caddy/certs/vdo-ninja/server.key:/certs/server.key:ro,z
+    restart: unless-stopped
+    cpus: 2
+    init: true
+    labels:
+      glance.name: VDO.Ninja
+      glance.icon: /assets/vdo.png
+      glance.url: https://vdo.server.netbird.cloud
+      glance.description: Peer-to-peer video streaming
+      glance.id: vdoninja
