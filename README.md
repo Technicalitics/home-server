@@ -34,7 +34,7 @@ Hosting, using, and sharing services on my server allow me to build operational 
 | [media_stack](media_stack/) | Media download & management |
 | [searxng](searxng/) | Private metasearch |
 | [neko](neko/) | Virtual browser |
-
+| [monitoring](monitoring/) | Prometheus, Loki, Grafana observability stack |
 ## Structure
 
 Each service directory contains `docker-compose.yml`, `.env.example`, and `README.md`.

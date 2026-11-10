@@ -1,0 +1,169 @@
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,z
+      - /srv/docker/data/monitoring/prometheus:/prometheus:z
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.listen-address=0.0.0.0:9090
+      - --web.enable-lifecycle
+    networks:
+      - monitoring
+    labels:
+      glance.parent: monitoring
+      glance.name: Prometheus
+      glance.icon: /assets/prometheus.png
+      glance.url: http://localhost:9090
+      glance.description: Metrics database
+      glance.id: prometheus
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana.server.netbird.cloud
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - TZ=${TZ:-UTC}
+    volumes:
+      - /srv/docker/data/monitoring/grafana:/var/lib/grafana:z
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro,z
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+      - loki
+    labels:
+      glance.parent: monitoring
+      glance.name: Grafana
+      glance.icon: /assets/grafana.png
+      glance.url: https://grafana.server.netbird.cloud
+      glance.description: Dashboards & alerting
+      glance.id: grafana
+
+  loki:
+    image: grafana/loki:3.5.0
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro,z
+      - /srv/docker/data/monitoring/loki:/loki:z
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+    labels:
+      glance.parent: monitoring
+      glance.name: Loki
+      glance.icon: /assets/loki.png
+      glance.url: http://localhost:3100
+      glance.description: Log aggregation
+      glance.id: loki
+
+  alloy:
+    image: grafana/alloy:v1.9.2
+    container_name: alloy
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:12345:12345"
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro,z
+      - /var/run/docker.sock:/var/run/docker.sock:ro,z
+      - /var/log:/var/log:ro,z
+      - /srv/docker/data/monitoring/alloy:/var/lib/alloy/data:z
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+    labels:
+      glance.parent: monitoring
+      glance.name: Alloy
+      glance.icon: /assets/alloy.png
+      glance.url: http://localhost:12345
+      glance.description: Telemetry collector
+      glance.id: alloy
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node_exporter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9100:9100"
+    volumes:
+      - /proc:/host/proc:ro,z
+      - /sys:/host/sys:ro,z
+      - /:/rootfs:ro,z
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+    networks:
+      - monitoring
+    labels:
+      glance.parent: monitoring
+      glance.name: Node Exporter
+      glance.description: Host metrics
+      glance.id: node_exporter
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8089:8080"
+    volumes:
+      - /:/rootfs:ro,z
+      - /var/run:/var/run:ro,z
+      - /sys:/sys:ro,z
+      - /var/lib/docker/:/var/lib/docker:ro,z
+      - /dev/disk/:/dev/disk:ro,z
+    privileged: true
+    networks:
+      - monitoring
+    labels:
+      glance.parent: monitoring
+      glance.name: cAdvisor
+      glance.description: Container metrics
+      glance.id: cadvisor
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.27.0
+    container_name: blackbox_exporter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9115:9115"
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro,z
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    networks:
+      - monitoring
+    labels:
+      glance.parent: monitoring
+      glance.name: Blackbox Exporter
+      glance.description: Endpoint probes
+      glance.id: blackbox_exporter
+
+networks:
+  monitoring:
+    driver: bridge
