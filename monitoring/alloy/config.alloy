@@ -1,1 +1,64 @@
+// ---------- Loki write path ----------
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
 
+// ---------- Docker container logs ----------
+discovery.docker "linux" {
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
+}
+
+discovery.relabel "containers" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "compose_project"
+  }
+}
+
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.linux.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.write.local.receiver]
+}
+
+// ---------- Host logs (Fedora/RHEL layout) ----------
+local.file_match "host_logs" {
+  path_targets = [
+    {"__path__" = "/var/log/messages",        "job" = "messages"},
+    {"__path__" = "/var/log/secure",          "job" = "secure"},
+    {"__path__" = "/var/log/maillog",         "job" = "maillog"},
+    {"__path__" = "/var/log/cron",            "job" = "cron"},
+    {"__path__" = "/var/log/boot.log",        "job" = "boot"},
+    {"__path__" = "/var/log/dnf*.log",        "job" = "dnf"},
+    {"__path__" = "/var/log/audit/audit.log", "job" = "audit"},
+  ]
+}
+
+loki.source.file "host_logs" {
+  targets       = local.file_match.host_logs.targets
+  forward_to    = [loki.write.local.receiver]
+  tail_from_end = true
+}
+
+// Optional: systemd journal (mount /var/log/journal and /etc/machine-id first)
+// loki.source.journal "journal" {
+//   labels     = {"job" = "journal"}
+//   forward_to = [loki.write.local.receiver]
+// }

@@ -18,6 +18,13 @@ scrape_configs:
     static_configs:
       - targets: ["cadvisor:8080"]
 
+  # Requires Docker engine metrics on the host, otherwise this target is DOWN:
+  #   /etc/docker/daemon.json: {"metrics-addr": "0.0.0.0:9323"}
+  # (127.0.0.1:9323 is not reachable via host.docker.internal.)
+  - job_name: docker
+    static_configs:
+      - targets: ["host.docker.internal:9323"]
+
   - job_name: loki
     static_configs:
       - targets: ["loki:3100"]
@@ -47,4 +54,28 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: blackbox-exporter:9115
+        replacement: netbird:9115
+
+  - job_name: blackbox_https
+    metrics_path: /probe
+    params: 
+      module: [https_2xx] 
+    static_configs:
+      - targets:
+          - https://auth.server.netbird.cloud
+          - https://grafana.server.netbird.cloud
+          - https://images.server.netbird.cloud
+          - https://media.server.netbird.cloud
+          # ... all *.server.netbird.cloud hosts ...
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: netbird:9115
+
+  # Raw TCP probes to host services are intentionally absent. The services
+  # bind to 127.0.0.1 on the host, which is not reachable from the sidecar
+  # network namespace; the same endpoints are covered over HTTPS by
+  # blackbox_https above (through Caddy).

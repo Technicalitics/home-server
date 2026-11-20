@@ -8,6 +8,23 @@ modules:
       method: GET
       tls_config:
         insecure_skip_verify: true
+  https_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202, 204, 301, 302, 303, 307, 308]
+      method: GET
+      tls_config: { insecure_skip_verify: false }
+      # The NetBird sidecar runs in netstack (rootless) mode. It creates no
+      # kernel tun device and installs no 100.64.0.0/10 route, so processes
+      # sharing its network namespace (this exporter) cannot reach the
+      # tailnet directly. NetBird publishes the tailnet through a SOCKS5
+      # proxy on loopback instead. Use it only for tailnet targets.
+      proxy_url: socks5://127.0.0.1:1080
+      # Resolve the hostname through the proxy (NetBird DNS), not with the
+      # container resolver, which only knows Docker's embedded DNS.
+      skip_resolve_phase_with_proxy: true
   tcp_connect:
     prober: tcp
     timeout: 5s

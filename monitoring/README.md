@@ -1,6 +1,6 @@
 # Monitoring
 
-A self-hosted observability stack (Prometheus + Loki + Grafana) with Grafana Alloy for log collection, plus node_exporter, cAdvisor, and blackbox_exporter.
+A self-hosted observability stack (Prometheus + Loki + Grafana) with Grafana Alloy for log collection, plus node_exporter, blackbox_exporter, and a NetBird sidecar.
 
 For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.md).
 
@@ -11,8 +11,9 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 - **Loki** - Log aggregation
 - **Alloy** - Collects Docker container logs and host logs into Loki
 - **node_exporter** - Host (CPU, memory, disk, network) metrics
-- **cAdvisor** - Per-container resource metrics
-- **blackbox_exporter** - Synthetic endpoint probes
+- **cAdvisor** - Per-container CPU, memory, network, and filesystem metrics
+- **blackbox_exporter** - Synthetic endpoint probes (shares the NetBird network namespace)
+- **netbird** - Mesh sidecar; exposes blackbox_exporter on the tailnet
 
 ## Quick Start
 
@@ -31,8 +32,11 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 
 3. Start the stack:
    ```bash
+   docker compose pull
    docker compose up -d
    ```
+   Use `up -d` (not `restart`) after changing an image tag or environment:
+   `restart` reuses the existing container and keeps the old image.
 
 4. (Optional) Apply Caddy reverse proxy changes (see below) and reload Caddy.
 
@@ -53,7 +57,56 @@ For common setup instructions, see [docs/INSTRUCTIONS.md](../docs/INSTRUCTIONS.m
 | 12345 | Alloy (internal) |
 | 9100 | node_exporter (internal) |
 | 8089 | cAdvisor (internal) |
-| 9115 | blackbox_exporter (internal) |
+| 9115 | blackbox_exporter (bound to 127.0.0.1 via the NetBird container) |
+
+## Container metrics (cAdvisor)
+
+Docker Engine 29 stores images with the containerd snapshotter by default, so
+`docker info` reports `Storage Driver: overlayfs` and the legacy
+`/var/lib/docker/image/overlay2/layerdb` tree does not exist. cAdvisor builds
+before v0.55.0 then log this for every container and register none of them:
+
+```
+failed to identify the read-write layer ID for container "..."
+open /rootfs/.../image/overlayfs/layerdb/mounts/<id>/mount-id: no such file or directory
+```
+
+The stack therefore pins `cadvisor:v0.55.1` (the newest gcr.io tag with
+containerd-snapshotter support) and mounts `/run/containerd` so cAdvisor can
+ask containerd for each container's rootfs. If the host runs the classic
+`overlay2` driver instead, the mount is harmless and the legacy path is used.
+
+## NetBird probes
+
+The NetBird sidecar uses the `rootless` image, which runs in netstack (userspace)
+mode: there is no kernel tun interface and no `100.64.0.0/10` route in the shared
+network namespace. Containers that join it (`blackbox_exporter`) can reach the
+Docker bridge normally, but tailnet addresses only through NetBird's built-in
+SOCKS5 proxy on `127.0.0.1:1080`.
+
+- `blackbox.yml` `https_2xx` sets `proxy_url: socks5://127.0.0.1:1080` and
+  `skip_resolve_phase_with_proxy: true`, so both DNS and TCP for tailnet probes
+  go through NetBird.
+- `http_2xx` (grafana/loki/prometheus) deliberately has no proxy; it uses
+  Docker DNS.
+- The `tcp` prober has no proxy support, so raw TCP checks against tailnet
+  hosts are not possible in this mode. Use the HTTPS endpoints through Caddy.
+- Host-loopback TCP probes (authentik/immich/jellyfin on `127.0.0.1`) are not
+  reachable from the sidecar netns at all; they are covered by the HTTPS job.
+- If you later need TCP/ICMP probes against the tailnet, replace the rootless
+  image with kernel-mode NetBird (`netbirdio/netbird:latest`, `NET_ADMIN`,
+  `/dev/net/tun`); the SOCKS5 path is HTTP-only.
+
+Reload the exporter after editing `blackbox.yml`:
+
+```bash
+curl -X POST http://127.0.0.1:9115/-/reload
+# or: docker kill -s HUP blackbox_exporter
+```
+
+Dashboard `7587` populates its target list from
+`label_values(probe_success, instance)`; no dashboard changes are needed once
+the probes produce data.
 
 ## Caddy (reverse proxy) additions
 
